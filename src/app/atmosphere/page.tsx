@@ -90,6 +90,13 @@ export default function AtmospherePage() {
     }
   }, [status, toast]);
 
+  // Reset playlist URL when relevant settings change
+  useEffect(() => {
+    // Reset the playlist URL whenever track count, search type, or tracks change
+    // This ensures a new playlist will be created when settings change
+    setPlaylistUrl(null);
+  }, [trackCount, activeSearchType, selectedGenres, selectedKeywords]);
+
   // Handle Spotify sign in
   const handleSignIn = useCallback(async () => {
     try {
@@ -107,8 +114,8 @@ export default function AtmospherePage() {
   }, [toast]);
 
   // Memoize the handlers to prevent unnecessary re-renders
-  const handleSearchByGenres = useCallback(async (genres: string[]) => {
-    console.log('handleSearchByGenres called with genres:', genres);
+  const handleSearchByGenres = useCallback(async (genres: string[], isAutoSearch = false) => {
+    console.log('handleSearchByGenres called with genres:', genres, 'isAutoSearch:', isAutoSearch);
     
     // Prevent duplicate calls if already searching
     if (isSearching) {
@@ -141,9 +148,23 @@ export default function AtmospherePage() {
       return;
     }
 
+    // Show notification for larger playlists only if not auto-searching
+    if (trackCount > 50 && !isAutoSearch) {
+      toast({
+        title: 'Creating a Large Playlist',
+        description: `Fetching tracks for a ${trackCount}-track playlist. This may take a moment.`,
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+    
     setIsSearching(true);
     setActiveSearchType('genres');
     clearSpotifyTracks();
+    
+    // Reset playlist URL when starting a new search
+    setPlaylistUrl(null);
 
     try {
       console.log('Starting genre search for', genres.length, 'genres');
@@ -152,18 +173,97 @@ export default function AtmospherePage() {
       // Create a local copy of the genres to avoid any potential issues
       const genresToSearch = [...genres];
       
+      // Calculate tracks per genre based on trackCount
+      // Significantly increase the multiplier for larger track counts
+      // This is key to ensuring we get enough tracks for large playlists
+      const multiplier = trackCount > 50 ? 5 : 3;
+      const desiredTracksPerGenre = Math.ceil((trackCount * multiplier) / genresToSearch.length);
+      
+      // Ensure we get at least 20 tracks per genre for variety
+      // BUT respect Spotify's API limit of 50 tracks per request
+      const SPOTIFY_MAX_LIMIT = 50;
+      const MIN_TRACKS_PER_GENRE = 20;
+      
+      console.log(`Aiming for ~${desiredTracksPerGenre} tracks per genre for a total target of ${trackCount} tracks`);
+      
       for (const genre of genresToSearch) {
         console.log('Searching for genre:', genre);
-        const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(genre)}&limit=5`);
-        const data = await response.json();
+        let totalTracksFetched = 0;
+        let offset = 0;
         
-        if (response.ok && data.tracks && data.tracks.length > 0) {
-          // Add these tracks to our results
-          console.log(`Found ${data.tracks.length} tracks for genre: ${genre}`);
-          addSpotifyTracks(data.tracks);
-          foundTracks = true;
-        } else {
-          console.warn(`No results found for genre: ${genre}`);
+        // Calculate how many tracks we need to fetch for this genre
+        const tracksNeededForGenre = Math.max(desiredTracksPerGenre, MIN_TRACKS_PER_GENRE);
+        
+        // If we need more than 50 tracks, we'll need to make multiple requests with pagination
+        // Increase the pagination depth for larger playlists
+        const MAX_PAGINATION_DEPTH = trackCount > 50 ? 5 : 3;
+        let paginationCount = 0;
+        
+        while (totalTracksFetched < tracksNeededForGenre && paginationCount < MAX_PAGINATION_DEPTH) {
+          // For each request, fetch up to 50 tracks (Spotify's limit)
+          const tracksToFetch = Math.min(SPOTIFY_MAX_LIMIT, tracksNeededForGenre - totalTracksFetched);
+          
+          console.log(`Fetching ${tracksToFetch} tracks for genre "${genre}" (offset: ${offset}, page ${paginationCount + 1}/${MAX_PAGINATION_DEPTH})`);
+          paginationCount++;
+          
+          const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(genre)}&limit=${tracksToFetch}&offset=${offset}`);
+          const data = await response.json();
+          
+          if (response.ok && data.tracks && data.tracks.length > 0) {
+            // Add these tracks to our results
+            console.log(`Found ${data.tracks.length} tracks for genre: ${genre} (page ${offset/SPOTIFY_MAX_LIMIT + 1})`);
+            addSpotifyTracks(data.tracks);
+            foundTracks = true;
+            
+            // Update counters for pagination
+            totalTracksFetched += data.tracks.length;
+            offset += SPOTIFY_MAX_LIMIT;
+            
+            // If we got fewer tracks than requested, there are no more to fetch
+            if (data.tracks.length < tracksToFetch) {
+              console.log(`No more tracks available for genre: ${genre} after fetching ${totalTracksFetched} tracks`);
+              break;
+            }
+          } else {
+            // If we get an error or no tracks, stop trying for this genre
+            if (!response.ok) {
+              console.error(`Error fetching tracks for genre "${genre}":`, data);
+            } else {
+              console.warn(`No results found for genre: ${genre} (page ${offset/SPOTIFY_MAX_LIMIT + 1})`);
+            }
+            break;
+          }
+        }
+        
+        console.log(`Completed search for genre "${genre}" with ${totalTracksFetched} total tracks fetched`);
+
+        // If we haven't reached our target track count after searching all genres,
+        // try to get more tracks by using genre variations
+        if (spotifyTracks.length < trackCount * 1.2 && totalTracksFetched < tracksNeededForGenre) {
+          // Try searching with variations to get more tracks
+          const variations = [
+            `${genre} music`,
+            `best ${genre}`,
+            `popular ${genre}`
+          ];
+          
+          for (const variation of variations) {
+            if (spotifyTracks.length >= trackCount * 1.5) {
+              // If we already have enough tracks, stop searching
+              break;
+            }
+            
+            console.log(`Trying variation search: "${variation}"`);
+            
+            const variationResponse = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(variation)}&limit=${SPOTIFY_MAX_LIMIT}&offset=0`);
+            const variationData = await variationResponse.json();
+            
+            if (variationResponse.ok && variationData.tracks && variationData.tracks.length > 0) {
+              console.log(`Found ${variationData.tracks.length} additional tracks with variation: ${variation}`);
+              addSpotifyTracks(variationData.tracks);
+              foundTracks = true;
+            }
+          }
         }
       }
       
@@ -177,13 +277,20 @@ export default function AtmospherePage() {
           isClosable: true,
         });
       } else {
-        toast({
-          title: 'Search completed',
-          description: `Found tracks for your selected genres`,
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
+        console.log(`Total tracks found after genre search: ${spotifyTracks.length}`);
+        
+        // If we still don't have enough tracks, notify the user, but ONLY if this isn't an auto-search
+        // on initial page load AND we have at least found some tracks
+        if (spotifyTracks.length < trackCount && !isAutoSearch && spotifyTracks.length > 0) {
+          console.log(`Insufficient tracks found (${spotifyTracks.length}/${trackCount})`);
+          toast({
+            title: 'Limited track availability',
+            description: `Only found ${spotifyTracks.length} tracks. Will create playlist with all available tracks.`,
+            status: 'info',
+            duration: 4000,
+            isClosable: true,
+          });
+        }
       }
     } catch (error) {
       console.error('Error searching tracks:', error);
@@ -198,7 +305,7 @@ export default function AtmospherePage() {
       setIsSearching(false);
       console.log('Genre search completed');
     }
-  }, [session?.user?.accessToken, toast, setActiveSearchType, clearSpotifyTracks, addSpotifyTracks, handleSignIn, isSearching]);
+  }, [session?.user?.accessToken, toast, setActiveSearchType, clearSpotifyTracks, addSpotifyTracks, handleSignIn, isSearching, trackCount, setPlaylistUrl, spotifyTracks.length]);
 
   const handleAiSuggestions = useCallback((genres: string[], keywords: string[], explanation?: string) => {
     setAiSuggestions(genres, keywords, explanation);
@@ -220,8 +327,8 @@ export default function AtmospherePage() {
     }
   }, [setAiSuggestions, clearSpotifyTracks, session?.user?.accessToken, handleSearchByGenres, toast]);
 
-  const handleSearchByKeywords = useCallback(async (keywords: string[]) => {
-    console.log('handleSearchByKeywords called with keywords:', keywords);
+  const handleSearchByKeywords = useCallback(async (keywords: string[], isAutoSearch = false) => {
+    console.log('handleSearchByKeywords called with keywords:', keywords, 'isAutoSearch:', isAutoSearch);
     
     // Prevent duplicate calls if already searching
     if (isSearching) {
@@ -254,9 +361,23 @@ export default function AtmospherePage() {
       return;
     }
 
+    // Show notification for larger playlists only if not auto-searching
+    if (trackCount > 50 && !isAutoSearch) {
+      toast({
+        title: 'Creating a Large Playlist',
+        description: `Fetching tracks for a ${trackCount}-track playlist. This may take a moment.`,
+        status: 'info',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+
     setIsSearching(true);
     setActiveSearchType('keywords');
     clearSpotifyTracks();
+    
+    // Reset playlist URL when starting a new search
+    setPlaylistUrl(null);
 
     try {
       console.log('Starting keyword search for', keywords.length, 'keywords');
@@ -265,25 +386,97 @@ export default function AtmospherePage() {
       // Create a local copy of the keywords to avoid any potential issues
       const keywordsToSearch = [...keywords];
       
+      // Calculate tracks per keyword based on trackCount
+      // Significantly increase the multiplier for larger track counts
+      // This is key to ensuring we get enough tracks for large playlists
+      const multiplier = trackCount > 50 ? 5 : 3;
+      const desiredTracksPerKeyword = Math.ceil((trackCount * multiplier) / keywordsToSearch.length);
+      
+      // Ensure we get at least 20 tracks per keyword for variety
+      // BUT respect Spotify's API limit of 50 tracks per request
+      const SPOTIFY_MAX_LIMIT = 50;
+      const MIN_TRACKS_PER_KEYWORD = 20;
+      
+      console.log(`Aiming for ~${desiredTracksPerKeyword} tracks per keyword for a total target of ${trackCount} tracks`);
+      
       for (const keyword of keywordsToSearch) {
         console.log('Searching for keyword:', keyword);
-        const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(keyword)}&limit=5`);
-        const data = await response.json();
+        let totalTracksFetched = 0;
+        let offset = 0;
         
-        if (response.ok && data.tracks && data.tracks.length > 0) {
-          // Add these tracks to our results
-          console.log(`Found ${data.tracks.length} tracks for keyword: ${keyword}`);
-          addSpotifyTracks(data.tracks);
-          foundTracks = true;
-        } else {
-          console.warn(`No results found for keyword: ${keyword}`);
-          toast({
-            title: 'Limited results',
-            description: `No tracks found for "${keyword}"`,
-            status: 'info',
-            duration: 2000,
-            isClosable: true,
-          });
+        // Calculate how many tracks we need to fetch for this keyword
+        const tracksNeededForKeyword = Math.max(desiredTracksPerKeyword, MIN_TRACKS_PER_KEYWORD);
+        
+        // If we need more than 50 tracks, we'll need to make multiple requests with pagination
+        // Increase the pagination depth for larger playlists
+        const MAX_PAGINATION_DEPTH = trackCount > 50 ? 5 : 3;
+        let paginationCount = 0;
+        
+        while (totalTracksFetched < tracksNeededForKeyword && paginationCount < MAX_PAGINATION_DEPTH) {
+          // For each request, fetch up to 50 tracks (Spotify's limit)
+          const tracksToFetch = Math.min(SPOTIFY_MAX_LIMIT, tracksNeededForKeyword - totalTracksFetched);
+          
+          console.log(`Fetching ${tracksToFetch} tracks for keyword "${keyword}" (offset: ${offset}, page ${paginationCount + 1}/${MAX_PAGINATION_DEPTH})`);
+          paginationCount++;
+          
+          const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(keyword)}&limit=${tracksToFetch}&offset=${offset}`);
+          const data = await response.json();
+          
+          if (response.ok && data.tracks && data.tracks.length > 0) {
+            // Add these tracks to our results
+            console.log(`Found ${data.tracks.length} tracks for keyword: ${keyword} (page ${offset/SPOTIFY_MAX_LIMIT + 1})`);
+            addSpotifyTracks(data.tracks);
+            foundTracks = true;
+            
+            // Update counters for pagination
+            totalTracksFetched += data.tracks.length;
+            offset += SPOTIFY_MAX_LIMIT;
+            
+            // If we got fewer tracks than requested, there are no more to fetch
+            if (data.tracks.length < tracksToFetch) {
+              console.log(`No more tracks available for keyword: ${keyword} after fetching ${totalTracksFetched} tracks`);
+              break;
+            }
+          } else {
+            // If we get an error or no tracks, stop trying for this keyword
+            if (!response.ok) {
+              console.error(`Error fetching tracks for keyword "${keyword}":`, data);
+            } else {
+              console.warn(`No results found for keyword: ${keyword} (page ${offset/SPOTIFY_MAX_LIMIT + 1})`);
+            }
+            break;
+          }
+        }
+        
+        console.log(`Completed search for keyword "${keyword}" with ${totalTracksFetched} total tracks fetched`);
+
+        // If we haven't reached our target track count after searching all keywords,
+        // try to get more tracks by using keyword variations
+        if (spotifyTracks.length < trackCount * 1.2 && totalTracksFetched < tracksNeededForKeyword) {
+          // Try searching with variations to get more tracks
+          const variations = [
+            `${keyword} music`,
+            `best ${keyword}`,
+            `popular ${keyword}`
+          ];
+          
+          for (const variation of variations) {
+            if (spotifyTracks.length >= trackCount * 1.5) {
+              // If we already have enough tracks, stop searching
+              break;
+            }
+            
+            console.log(`Trying variation search: "${variation}"`);
+            
+            const variationResponse = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(variation)}&limit=${SPOTIFY_MAX_LIMIT}&offset=0`);
+            const variationData = await variationResponse.json();
+            
+            if (variationResponse.ok && variationData.tracks && variationData.tracks.length > 0) {
+              console.log(`Found ${variationData.tracks.length} additional tracks with variation: ${variation}`);
+              addSpotifyTracks(variationData.tracks);
+              foundTracks = true;
+            }
+          }
         }
       }
 
@@ -297,13 +490,20 @@ export default function AtmospherePage() {
           isClosable: true,
         });
       } else {
-        toast({
-          title: 'Search completed',
-          description: `Found tracks for your selected keywords`,
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
+        console.log(`Total tracks found after keyword search: ${spotifyTracks.length}`);
+        
+        // If we still don't have enough tracks, notify the user, but ONLY if this isn't an auto-search
+        // on initial page load AND we have at least found some tracks
+        if (spotifyTracks.length < trackCount && !isAutoSearch && spotifyTracks.length > 0) {
+          console.log(`Insufficient tracks found (${spotifyTracks.length}/${trackCount})`);
+          toast({
+            title: 'Limited track availability',
+            description: `Only found ${spotifyTracks.length} tracks. Will create playlist with all available tracks.`,
+            status: 'info',
+            duration: 4000,
+            isClosable: true,
+          });
+        }
       }
     } catch (error) {
       console.error('Error searching tracks:', error);
@@ -318,7 +518,7 @@ export default function AtmospherePage() {
       setIsSearching(false);
       console.log('Keyword search completed');
     }
-  }, [session?.user?.accessToken, toast, setActiveSearchType, clearSpotifyTracks, addSpotifyTracks, handleSignIn, isSearching]);
+  }, [session?.user?.accessToken, toast, setActiveSearchType, clearSpotifyTracks, addSpotifyTracks, handleSignIn, isSearching, trackCount, setPlaylistUrl, spotifyTracks.length]);
   
   // Auto-search when arriving at the page with AI suggestions but no tracks
   useEffect(() => {
@@ -328,9 +528,9 @@ export default function AtmospherePage() {
         spotifyTracks.length === 0 && 
         session?.user?.accessToken && 
         !isSearching) {
-      // Default to searching by genres
+      // Default to searching by genres, but pass true for isAutoSearch to avoid notifications
       console.log('Auto-searching by genres on page load');
-      handleSearchByGenres(selectedGenres);
+      handleSearchByGenres(selectedGenres, true);
     }
   }, [selectedGame, selectedGenres, spotifyTracks.length, session?.user?.accessToken, handleSearchByGenres, isSearching]);
 
@@ -344,7 +544,7 @@ export default function AtmospherePage() {
         isClosable: true,
       });
       handleSignIn();
-      return;
+      return null;
     }
 
     if (!selectedGame) {
@@ -355,7 +555,7 @@ export default function AtmospherePage() {
         duration: 3000,
         isClosable: true,
       });
-      return;
+      return null;
     }
 
     if (spotifyTracks.length === 0) {
@@ -366,9 +566,37 @@ export default function AtmospherePage() {
         duration: 3000,
         isClosable: true,
       });
-      return;
+      return null;
     }
 
+    // Track whether we need to show a track count adjustment notice
+    let showTrackAdjustmentNotice = false;
+
+    // Check if we have enough tracks for the requested playlist length
+    // If not, we should refresh the track list first
+    if (spotifyTracks.length < trackCount && !isSearching) {
+      toast({
+        title: 'Refreshing track list',
+        description: `Fetching more tracks to meet your request for ${trackCount} tracks`,
+        status: 'info',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      // Trigger a new search based on the current selection type
+      if (activeSearchType === 'genres') {
+        await handleSearchByGenres(selectedGenres);
+      } else {
+        await handleSearchByKeywords(selectedKeywords);
+      }
+      
+      // If after searching we still don't have enough tracks, we'll show a notice later
+      if (spotifyTracks.length < trackCount) {
+        showTrackAdjustmentNotice = true;
+      }
+    }
+
+    console.log(`Creating playlist with track count: ${trackCount}`);
     setIsCreatingPlaylist(true);
 
     try {
@@ -421,33 +649,145 @@ export default function AtmospherePage() {
         throw new Error('Failed to create playlist');
       }
 
-      // Add tracks to the playlist
-      const trackUris = spotifyTracks.map(track => track.uri);
+      // Determine the source of our tracks (genres or keywords)
+      const sources = activeSearchType === 'genres' ? selectedGenres : selectedKeywords;
       
-      const addTracksResponse = await fetch(`/api/spotify?action=addTracksToPlaylist&playlistId=${playlistData.id}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          uris: trackUris.slice(0, Math.min(trackUris.length, 100)), // Spotify has a limit of 100 tracks per request
-        }),
-      });
+      // Prepare and distribute tracks evenly based on the trackCount
+      let finalTrackUris: string[] = [];
+      
+      if (sources.length > 0 && spotifyTracks.length > 0) {
+        console.log(`Preparing playlist with ${trackCount} tracks from ${spotifyTracks.length} available tracks`);
+        
+        // If we don't have enough tracks, use all available tracks and warn the user
+        if (spotifyTracks.length < trackCount) {
+          finalTrackUris = spotifyTracks.map(track => track.uri);
+          console.log(`Not enough tracks available. Using all ${finalTrackUris.length} available tracks instead of ${trackCount}.`);
+          
+          // We'll show a combined notice at the end with the success message
+          showTrackAdjustmentNotice = true;
+        } else {
+          // We have more than enough tracks, so distribute them evenly
+          
+          // First, ensure we're working with a shuffled copy of the tracks for better variety
+          const shuffledTracks = [...spotifyTracks].sort(() => Math.random() - 0.5);
+          
+          // Create a mapping of tracks to their sources
+          const tracksBySource: Record<string, SpotifyTrack[]> = {};
+          sources.forEach(source => { tracksBySource[source] = []; });
+          
+          // Group tracks by source in round-robin fashion
+          shuffledTracks.forEach((track, index) => {
+            const source = sources[index % sources.length];
+            tracksBySource[source].push(track);
+          });
+          
+          // Log how many tracks we have per source
+          sources.forEach(source => {
+            console.log(`Source "${source}" has ${tracksBySource[source].length} tracks available`);
+          });
+          
+          // Calculate how many tracks to take from each source
+          const tracksPerSource = Math.floor(trackCount / sources.length);
+          const remainder = trackCount % sources.length;
+          
+          console.log(`Aiming for ~${tracksPerSource} tracks per source (${sources.length} sources) to reach ${trackCount} total`);
+          
+          // Take tracks from each source in an interleaved pattern
+          let tracksAdded = 0;
+          let sourceIndex = 0;
+          
+          while (tracksAdded < trackCount && tracksAdded < spotifyTracks.length) {
+            // Calculate which source to take from next (round-robin)
+            const source = sources[sourceIndex % sources.length];
+            const sourceTracks = tracksBySource[source];
+            
+            // If this source has tracks remaining, take one
+            if (sourceTracks.length > 0) {
+              const track = sourceTracks.shift(); // Take the first track
+              if (track) {
+                finalTrackUris.push(track.uri);
+                tracksAdded++;
+              }
+            }
+            
+            // Move to the next source
+            sourceIndex++;
+            
+            // If we've gone through all sources and still need more tracks,
+            // just add any remaining tracks from any source
+            if (sourceIndex >= sources.length * 2 && tracksAdded < trackCount && tracksAdded < spotifyTracks.length) {
+              // Find any source that still has tracks
+              for (const source of sources) {
+                while (tracksBySource[source].length > 0 && tracksAdded < trackCount && tracksAdded < spotifyTracks.length) {
+                  const track = tracksBySource[source].shift();
+                  if (track) {
+                    finalTrackUris.push(track.uri);
+                    tracksAdded++;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } else {
+        // Fallback if we can't group by source
+        finalTrackUris = spotifyTracks.map(track => track.uri).slice(0, trackCount);
+      }
+      
+      // Ensure we have exactly trackCount tracks, with a fallback for when we have fewer than requested
+      const finalPlaylistLength = Math.min(trackCount, finalTrackUris.length);
+      
+      console.log(`Creating playlist with ${finalTrackUris.length} tracks out of ${trackCount} requested`);
+      
+      // Add tracks to the playlist - Spotify has a limit of 100 tracks per request
+      // so we need to handle larger playlists in batches
+      const MAX_TRACKS_PER_REQUEST = 100;
+      
+      // Process tracks in batches of 100
+      for (let i = 0; i < finalTrackUris.length; i += MAX_TRACKS_PER_REQUEST) {
+        const trackBatch = finalTrackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
+        
+        console.log(`Adding batch of ${trackBatch.length} tracks to playlist (${i+1} to ${Math.min(i+MAX_TRACKS_PER_REQUEST, finalTrackUris.length)})`);
+        
+        const addTracksResponse = await fetch(`/api/spotify?action=addTracksToPlaylist&playlistId=${playlistData.id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            uris: trackBatch,
+          }),
+        });
 
-      if (!addTracksResponse.ok) {
-        throw new Error('Failed to add tracks to playlist');
+        if (!addTracksResponse.ok) {
+          throw new Error(`Failed to add batch of tracks to playlist (batch ${i/MAX_TRACKS_PER_REQUEST + 1})`);
+        }
       }
 
       // Save the playlist URL for the user to open in Spotify
-      setPlaylistUrl(playlistData.external_urls.spotify);
+      const spotifyUrl = playlistData.external_urls.spotify;
+      setPlaylistUrl(spotifyUrl);
 
-      toast({
-        title: 'Playlist created',
-        description: 'Your playlist has been created in Spotify',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
+      // Show a single consolidated success message, potentially with track count adjustment notice
+      if (showTrackAdjustmentNotice) {
+        toast({
+          title: 'Playlist created with track adjustment',
+          description: `You requested ${trackCount} tracks, but only ${finalTrackUris.length} unique tracks were available. Your playlist has been created with all available tracks.`,
+          status: 'success',
+          duration: 7000,
+          isClosable: true,
+        });
+      } else {
+        toast({
+          title: 'Playlist created',
+          description: `Your playlist with ${finalTrackUris.length} tracks has been created in Spotify`,
+          status: 'success',
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+      
+      return spotifyUrl;
 
     } catch (error) {
       console.error('Error creating playlist:', error);
@@ -458,10 +798,27 @@ export default function AtmospherePage() {
         duration: 5000,
         isClosable: true,
       });
+      return null;
     } finally {
       setIsCreatingPlaylist(false);
     }
-  }, [selectedGame, selectedGenres, spotifyTracks, aiExplanation, session?.user?.accessToken, toast, handleSignIn]);
+  }, [
+    selectedGame, 
+    selectedGenres, 
+    spotifyTracks, 
+    aiExplanation, 
+    session?.user?.accessToken, 
+    toast, 
+    handleSignIn, 
+    activeSearchType, 
+    selectedKeywords, 
+    trackCount,
+    setIsCreatingPlaylist,
+    setPlaylistUrl,
+    isSearching,
+    handleSearchByGenres,
+    handleSearchByKeywords
+  ]);
 
   if (!selectedGame) {
     return (
@@ -532,7 +889,7 @@ export default function AtmospherePage() {
               shadow="md"
             >
               <Heading as="h3" size="md" mb={3} color={textColor}>
-                AI Recommendation Explanation
+                Mr Beats' Atmosphere explained
               </Heading>
               <Text color={useColorModeValue('gray.600', 'gray.400')}>
                 {aiExplanation}
@@ -549,12 +906,17 @@ export default function AtmospherePage() {
                 borderWidth="1px" 
                 borderColor={borderColor}
                 shadow="md"
+                boxShadow={activeSearchType === 'genres' ? '0 0 0 3px rgba(29, 185, 84, 0.6)' : 'md'}
+                transform={activeSearchType === 'genres' ? 'scale(1.03)' : 'scale(1)'}
+                transition="all 0.2s"
               >
+                {/* GenreSelector component hidden as per user request 
                 <GenreSelector 
                   selectedGenres={selectedGenres}
                   onChange={updateSelectedGenres}
                   aiSuggestedGenres={aiSuggestedGenres}
                 />
+                */}
                 
                 <Button 
                   mt={4} 
@@ -571,10 +933,10 @@ export default function AtmospherePage() {
                   isLoading={isSearching && activeSearchType === 'genres'}
                   loadingText="Searching..."
                 >
-                  Search by Genres
+                  Mr Beats Atmosphere
                 </Button>
-                <Text fontSize="xs" color="gray.500" textAlign="center" mt={1}>
-                  {activeSearchType === 'genres' && 'Default'}
+                <Text fontSize="xs" color={activeSearchType === 'genres' ? '#1DB954' : 'gray.500'} fontWeight={activeSearchType === 'genres' ? 'bold' : 'normal'} textAlign="center" mt={1}>
+                  {activeSearchType === 'genres' && 'Selected'}
                 </Text>
               </Box>
             </GridItem>
@@ -587,12 +949,17 @@ export default function AtmospherePage() {
                 borderWidth="1px" 
                 borderColor={borderColor}
                 shadow="md"
+                boxShadow={activeSearchType === 'keywords' ? '0 0 0 3px rgba(29, 185, 84, 0.6)' : 'md'}
+                transform={activeSearchType === 'keywords' ? 'scale(1.03)' : 'scale(1)'}
+                transition="all 0.2s"
               >
+                {/* KeywordSelector component hidden as per user request 
                 <KeywordSelector 
                   selectedKeywords={selectedKeywords}
                   onChange={updateSelectedKeywords}
                   aiSuggestedKeywords={aiKeywords}
                 />
+                */}
                 
                 <Button 
                   mt={4} 
@@ -624,10 +991,10 @@ export default function AtmospherePage() {
                   isLoading={isSearching && activeSearchType === 'keywords'}
                   loadingText="Searching..."
                 >
-                  Search by Keywords
+                  Alternate Selection
                 </Button>
-                <Text fontSize="xs" color="gray.500" textAlign="center" mt={1}>
-                  {activeSearchType === 'keywords' && 'Default'}
+                <Text fontSize="xs" color={activeSearchType === 'keywords' ? '#1DB954' : 'gray.500'} fontWeight={activeSearchType === 'keywords' ? 'bold' : 'normal'} textAlign="center" mt={1}>
+                  {activeSearchType === 'keywords' && 'Selected'}
                 </Text>
               </Box>
             </GridItem>
@@ -648,6 +1015,48 @@ export default function AtmospherePage() {
             />
           </Box>
 
+          {/* Spotify Button above Search Results */}
+          {status === 'authenticated' && (
+            <Flex justify="center" my={4}>
+              <Button 
+                colorScheme="green" 
+                size="lg" 
+                onClick={async () => {
+                  if (playlistUrl) {
+                    // If playlist already exists, just open it
+                    window.open(playlistUrl, '_blank');
+                  } else {
+                    // Check if we need to refresh tracks first
+                    if (spotifyTracks.length < trackCount && !isSearching) {
+                      setIsCreatingPlaylist(true); // Show loading state during refresh
+                    }
+                    
+                    // Create the playlist and open it
+                    const newPlaylistUrl = await handleContinue();
+                    if (newPlaylistUrl) {
+                      window.open(newPlaylistUrl, '_blank');
+                    }
+                  }
+                }}
+                px={10}
+                py={6}
+                isLoading={isCreatingPlaylist}
+                loadingText={spotifyTracks.length < trackCount && !isSearching ? "Refreshing tracks..." : "Creating Playlist"}
+                isDisabled={spotifyTracks.length === 0}
+                leftIcon={<Icon as={FaSpotify} boxSize={5} />}
+                borderRadius="full"
+                bgColor="#1DB954"
+                _hover={{ bgColor: "#1ED760" }}
+                _active={{ bgColor: "#1AA64B" }}
+                fontWeight="bold"
+                fontSize="md"
+                boxShadow="md"
+              >
+                {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
+              </Button>
+            </Flex>
+          )}
+
           {/* Search Results Section */}
           <Box 
             p={6} 
@@ -658,10 +1067,10 @@ export default function AtmospherePage() {
             shadow="md"
           >
             <Heading as="h3" size="md" mb={4} color={textColor}>
-              Search Results
+              Playlist Sample
               {activeSearchType && (
-                <Badge ml={2} colorScheme={activeSearchType === 'genres' ? 'blue' : 'green'}>
-                  {activeSearchType === 'genres' ? 'By Genres' : 'By Keywords'}
+                <Badge ml={2} bg="#1DB954" color="white">
+                  {activeSearchType === 'genres' ? 'MAIN' : 'Alternate'}
                 </Badge>
               )}
             </Heading>
@@ -671,37 +1080,39 @@ export default function AtmospherePage() {
                 <Spinner size="xl" />
               </Flex>
             ) : spotifyTracks.length > 0 ? (
-              <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 5 }} spacing={4}>
-                {spotifyTracks.map((track: SpotifyTrack) => (
-                  <Card key={track.id} overflow="hidden" variant="outline">
-                    <CardBody p={3}>
-                      <Image
-                        src={track.album.images[0]?.url || '/images/music-placeholder.png'}
-                        alt={track.name}
-                        borderRadius="md"
-                        objectFit="cover"
-                        width="100%"
-                        height="160px"
-                      />
-                      <Stack mt={2} spacing={1}>
-                        <Heading size="sm" noOfLines={1} title={track.name}>
-                          {track.name}
-                        </Heading>
-                        <Text fontSize="sm" color="gray.500" noOfLines={1}>
-                          {track.artists.map(artist => artist.name).join(', ')}
-                        </Text>
-                        <Text fontSize="xs" color="gray.400" noOfLines={1}>
-                          {track.album.name}
-                        </Text>
-                      </Stack>
-                    </CardBody>
-                  </Card>
-                ))}
-              </SimpleGrid>
+              <>
+                <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 5 }} spacing={4}>
+                  {spotifyTracks.slice(0, 25).map((track: SpotifyTrack) => (
+                    <Card key={track.id} overflow="hidden" variant="outline">
+                      <CardBody p={3}>
+                        <Image
+                          src={track.album.images[0]?.url || '/images/music-placeholder.png'}
+                          alt={track.name}
+                          borderRadius="md"
+                          objectFit="cover"
+                          width="100%"
+                          height="160px"
+                        />
+                        <Stack mt={2} spacing={1}>
+                          <Heading size="sm" noOfLines={1} title={track.name}>
+                            {track.name}
+                          </Heading>
+                          <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                            {track.artists.map(artist => artist.name).join(', ')}
+                          </Text>
+                          <Text fontSize="xs" color="gray.400" noOfLines={1}>
+                            {track.album.name}
+                          </Text>
+                        </Stack>
+                      </CardBody>
+                    </Card>
+                  ))}
+                </SimpleGrid>
+              </>
             ) : (
               <Text textAlign="center" color="gray.500" py={10}>
                 Music suggestions have been generated based on {selectedGame.name}. 
-                Click "Search by Genres" or "Search by Keywords" to find matching tracks.
+                Click "Mr Beats Atmosphere" or "Alternate Selection" to find matching tracks.
               </Text>
             )}
           </Box>
@@ -710,42 +1121,59 @@ export default function AtmospherePage() {
 
           <Flex justify="center" mt={4} direction="column" align="center" gap={4}>
             {status === 'authenticated' ? (
-              <>
-                <Button 
-                  colorScheme="blue" 
-                  size="lg" 
-                  onClick={handleContinue}
-                  px={8}
-                  isLoading={isCreatingPlaylist}
-                  loadingText="Creating Playlist"
-                  isDisabled={spotifyTracks.length === 0}
-                >
-                  Generate Playlist
-                </Button>
-
-                {playlistUrl && (
-                  <Button
-                    as="a"
-                    href={playlistUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    colorScheme="green"
-                    leftIcon={<Icon as={FaSpotify} />}
-                    size="lg"
-                  >
-                    Play on Spotify
-                  </Button>
-                )}
-              </>
+              <Button 
+                colorScheme="green" 
+                size="lg" 
+                onClick={async () => {
+                  if (playlistUrl) {
+                    // If playlist already exists, just open it
+                    window.open(playlistUrl, '_blank');
+                  } else {
+                    // Check if we need to refresh tracks first
+                    if (spotifyTracks.length < trackCount && !isSearching) {
+                      setIsCreatingPlaylist(true); // Show loading state during refresh
+                    }
+                    
+                    // Create the playlist and open it
+                    const newPlaylistUrl = await handleContinue();
+                    if (newPlaylistUrl) {
+                      window.open(newPlaylistUrl, '_blank');
+                    }
+                  }
+                }}
+                px={10}
+                py={6}
+                isLoading={isCreatingPlaylist}
+                loadingText={spotifyTracks.length < trackCount && !isSearching ? "Refreshing tracks..." : "Creating Playlist"}
+                isDisabled={spotifyTracks.length === 0}
+                leftIcon={<Icon as={FaSpotify} boxSize={5} />}
+                borderRadius="full"
+                bgColor="#1DB954"
+                _hover={{ bgColor: "#1ED760" }}
+                _active={{ bgColor: "#1AA64B" }}
+                fontWeight="bold"
+                fontSize="md"
+                boxShadow="md"
+              >
+                {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
+              </Button>
             ) : (
               <Button 
                 colorScheme="green" 
                 size="lg" 
                 onClick={handleSignIn}
-                px={8}
-                leftIcon={<Icon as={FaSpotify} />}
+                px={10}
+                py={6}
+                leftIcon={<Icon as={FaSpotify} boxSize={5} />}
+                borderRadius="full"
+                bgColor="#1DB954"
+                _hover={{ bgColor: "#1ED760" }}
+                _active={{ bgColor: "#1AA64B" }}
+                fontWeight="bold"
+                fontSize="md"
+                boxShadow="md"
               >
-                Connect with Spotify to Continue
+                Connect with Spotify
               </Button>
             )}
 

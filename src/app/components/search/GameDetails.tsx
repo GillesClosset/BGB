@@ -179,32 +179,7 @@ const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded }) => {
             </Text>
           </Box>
           
-          {/* Categories and Mechanics */}
-          <Box mb={4}>
-            <Heading as="h3" size="md" mb={3} color={textColor}>
-              Categories
-            </Heading>
-            <Flex wrap="wrap" gap={2}>
-              {game.categories.map((category, index) => (
-                <Badge key={index} colorScheme="blue" px={2} py={1} borderRadius="md">
-                  {category}
-                </Badge>
-              ))}
-            </Flex>
-          </Box>
-          
-          <Box mb={4}>
-            <Heading as="h3" size="md" mb={3} color={textColor}>
-              Mechanics
-            </Heading>
-            <Flex wrap="wrap" gap={2}>
-              {game.mechanics.map((mechanic, index) => (
-                <Badge key={index} colorScheme="teal" px={2} py={1} borderRadius="md">
-                  {mechanic}
-                </Badge>
-              ))}
-            </Flex>
-          </Box>
+          {/* Categories and Mechanics sections removed to improve user experience */}
         </GridItem>
       </Grid>
     </Box>

@@ -147,7 +147,7 @@ Please provide:
 
 CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 1. FIRST provide a single valid JSON object with the structure shown below
-2. THEN provide 2-3 sentences explaining your choices
+2. THEN provide 2-3 sentences explaining your choices. You should not mention the JSON in your explanation, nor "search" or "keywords". Instead, explain your choices in terms of the board game's theme and gameplay, or your "recommendations" or "suggestions".
 3. DO NOT include any text, examples, or self-dialogue before the JSON
 4. DO NOT include multiple JSON objects or code blocks
 5. DO NOT ask questions or seek confirmation

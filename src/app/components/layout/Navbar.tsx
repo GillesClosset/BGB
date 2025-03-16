@@ -16,18 +16,54 @@ import {
   MenuDivider,
   useColorModeValue,
   Text,
-  Badge
+  Badge,
+  Tooltip,
+  useToast
 } from '@chakra-ui/react';
 import { MoonIcon, SunIcon } from '@chakra-ui/icons';
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
+import { FaSpotify } from 'react-icons/fa';
+import { useEffect } from 'react';
 
 export default function Navbar() {
   const { colorMode, toggleColorMode } = useColorMode();
   const { data: session, status } = useSession();
+  const toast = useToast();
   
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  
+  // Check for authentication errors
+  useEffect(() => {
+    if (session?.error === 'RefreshAccessTokenError') {
+      toast({
+        title: 'Session Expired',
+        description: 'Please sign in again to continue using Spotify features',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+      
+      // Sign out to clear the invalid session
+      signOut({ redirect: false });
+    }
+  }, [session, toast]);
+  
+  const handleSignIn = async () => {
+    try {
+      await signIn('spotify', { callbackUrl: window.location.pathname });
+    } catch (error) {
+      console.error('Sign in error:', error);
+      toast({
+        title: 'Authentication Failed',
+        description: 'There was an error signing in with Spotify',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
   
   return (
     <Box 
@@ -52,9 +88,11 @@ export default function Navbar() {
             <Link href="/search" passHref>
               <Text fontWeight="medium" cursor="pointer">Search</Text>
             </Link>
-            <Link href="/playlists" passHref>
-              <Text fontWeight="medium" cursor="pointer">My Playlists</Text>
-            </Link>
+            {session && (
+              <Link href="/playlists" passHref>
+                <Text fontWeight="medium" cursor="pointer">My Playlists</Text>
+              </Link>
+            )}
             <Link href="/spotify-test" passHref>
               <Text fontWeight="medium" cursor="pointer" position="relative">
                 Spotify Test
@@ -99,19 +137,21 @@ export default function Navbar() {
             <Button isLoading variant="ghost" />
           ) : session ? (
             <Menu>
-              <MenuButton
-                as={Button}
-                rounded="full"
-                variant="link"
-                cursor="pointer"
-                minW={0}
-              >
-                <Avatar 
-                  size="sm" 
-                  src={session.user.image || undefined} 
-                  name={session.user.name || 'User'} 
-                />
-              </MenuButton>
+              <Tooltip label={session.user.name || 'Spotify User'}>
+                <MenuButton
+                  as={Button}
+                  rounded="full"
+                  variant="link"
+                  cursor="pointer"
+                  minW={0}
+                >
+                  <Avatar 
+                    size="sm" 
+                    src={session.user.image || undefined} 
+                    name={session.user.name || 'User'} 
+                  />
+                </MenuButton>
+              </Tooltip>
               <MenuList>
                 <MenuItem as={Link} href="/profile">
                   Profile
@@ -130,8 +170,9 @@ export default function Navbar() {
             </Menu>
           ) : (
             <Button 
-              colorScheme="brand" 
-              onClick={() => signIn('spotify')}
+              colorScheme="green" 
+              onClick={handleSignIn}
+              leftIcon={<FaSpotify />}
             >
               Sign in with Spotify
             </Button>

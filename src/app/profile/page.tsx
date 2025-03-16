@@ -12,16 +12,53 @@ import {
   Divider,
   Spinner,
   useColorModeValue,
+  useToast,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  Icon,
 } from '@chakra-ui/react';
 import { FaSpotify } from 'react-icons/fa';
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useCallback } from 'react';
 import MainLayout from '../components/layout/MainLayout';
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const bgColor = useColorModeValue('white', 'gray.800');
+  const toast = useToast();
+
+  // Handle Spotify sign in
+  const handleSignIn = useCallback(async () => {
+    try {
+      await signIn('spotify', { callbackUrl: '/profile' });
+    } catch (error) {
+      console.error('Sign in error:', error);
+      toast({
+        title: 'Authentication Failed',
+        description: 'Failed to sign in with Spotify. Please try again.',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [toast]);
+
+  // Check for authentication errors
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please sign in with Spotify to view your profile',
+        status: 'warning',
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  }, [status, toast]);
 
   // Loading state
   if (status === 'loading') {
@@ -42,21 +79,60 @@ export default function ProfilePage() {
     return (
       <MainLayout>
         <Container maxW="container.xl" py={8}>
-          <VStack spacing={8} align="center" justify="center" minH="50vh">
+          <VStack spacing={8} align="stretch">
             <Heading as="h1" size="xl">
-              Sign In Required
+              Your Profile
             </Heading>
-            <Text fontSize="lg" textAlign="center">
-              Please sign in with your Spotify account to view your profile.
-            </Text>
-            <Button
-              size="lg"
-              colorScheme="brand"
-              leftIcon={<FaSpotify />}
-              onClick={() => signIn('spotify', { callbackUrl: '/profile' })}
+            
+            <Alert 
+              status="warning" 
+              variant="solid" 
+              borderRadius="md"
+              flexDirection={{ base: 'column', sm: 'row' }}
+              alignItems="center"
+              justifyContent="space-between"
+              py={4}
             >
-              Sign in with Spotify
-            </Button>
+              <Flex alignItems="center">
+                <AlertIcon />
+                <Box>
+                  <AlertTitle>Authentication Required</AlertTitle>
+                  <AlertDescription>
+                    Sign in with Spotify to view and manage your profile
+                  </AlertDescription>
+                </Box>
+              </Flex>
+              <Button 
+                colorScheme="green" 
+                onClick={handleSignIn} 
+                mt={{ base: 3, sm: 0 }}
+                leftIcon={<Icon as={FaSpotify} />}
+              >
+                Connect with Spotify
+              </Button>
+            </Alert>
+
+            <VStack spacing={8} align="center" justify="center" minH="40vh" bg={bgColor} p={6} borderRadius="lg" shadow="md">
+              <Avatar
+                size="2xl"
+                name="Guest User"
+                src="/images/default-avatar.png"
+              />
+              <Heading as="h2" size="lg">
+                Sign In Required
+              </Heading>
+              <Text fontSize="lg" textAlign="center">
+                Please sign in with your Spotify account to view your profile and create custom playlists.
+              </Text>
+              <Button
+                size="lg"
+                colorScheme="green"
+                leftIcon={<FaSpotify />}
+                onClick={handleSignIn}
+              >
+                Sign in with Spotify
+              </Button>
+            </VStack>
           </VStack>
         </Container>
       </MainLayout>
@@ -83,7 +159,7 @@ export default function ProfilePage() {
                   {session?.user?.name || 'Spotify User'}
                 </Heading>
                 <Text>{session?.user?.email || 'No email available'}</Text>
-                <Text color="brand.500" fontWeight="bold">
+                <Text color="green.500" fontWeight="bold">
                   Spotify Account Connected
                 </Text>
               </VStack>
@@ -104,14 +180,15 @@ export default function ProfilePage() {
 
               <Flex gap={4} mt={4}>
                 <Button
-                  colorScheme="brand"
+                  colorScheme="blue"
                   onClick={() => router.push('/search')}
                 >
                   Find Board Games
                 </Button>
                 <Button
                   variant="outline"
-                  colorScheme="boardgame"
+                  colorScheme="green"
+                  leftIcon={<FaSpotify />}
                   onClick={() => router.push('/playlists')}
                 >
                   View Your Playlists

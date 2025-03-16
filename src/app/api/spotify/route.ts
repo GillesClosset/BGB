@@ -107,6 +107,7 @@ export async function GET(req: NextRequest) {
       case 'search': {
         const query = url.searchParams.get('query');
         const limit = url.searchParams.get('limit') || '20';
+        const offset = url.searchParams.get('offset') || '0';
         
         if (!query) {
           return NextResponse.json(
@@ -116,7 +117,16 @@ export async function GET(req: NextRequest) {
         }
         
         try {
-          const data = await spotifyClient.searchTracks(query, { limit: parseInt(limit) });
+          // Validate limit to ensure it's within Spotify's allowed range (1-50)
+          const parsedLimit = Math.min(Math.max(parseInt(limit), 1), 50);
+          const parsedOffset = Math.max(parseInt(offset), 0);
+          
+          console.log(`[Spotify API] Searching tracks with query: "${query}", limit: ${parsedLimit}, offset: ${parsedOffset}`);
+          
+          const data = await spotifyClient.searchTracks(query, { 
+            limit: parsedLimit,
+            offset: parsedOffset
+          });
           return NextResponse.json({ tracks: data.body.tracks?.items || [] });
         } catch (error: any) {
           logError(`Failed to search tracks with query: ${query}`, error);
