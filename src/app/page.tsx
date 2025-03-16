@@ -63,11 +63,17 @@ export default function Home() {
               <Button 
                 size="lg" 
                 colorScheme="green" 
-                rightIcon={<FaSpotify />}
+                leftIcon={<Icon as={FaSpotify} boxSize={5} />}
                 onClick={handleGetStarted}
                 px={8}
                 py={6}
                 fontSize="lg"
+                borderRadius="full"
+                bgColor="#1DB954"
+                _hover={{ bgColor: "#1ED760" }}
+                _active={{ bgColor: "#1AA64B" }}
+                fontWeight="bold"
+                boxShadow="md"
               >
                 {status === 'authenticated' ? 'Get Started' : 'Connect with Spotify'}
               </Button>
@@ -80,9 +86,10 @@ export default function Home() {
               <Image 
                 src="/images/hero-image.png" 
                 alt="Board games and music" 
-                fallbackSrc="https://via.placeholder.com/400x400?text=BoardGame+Beats"
+                fallbackSrc="https://placehold.co/400x400/1DB954/FFFFFF?text=BoardGame+Beats"
                 borderRadius="lg"
                 shadow="2xl"
+                objectFit="cover"
               />
             </Box>
           </Flex>
@@ -155,11 +162,21 @@ export default function Home() {
             
             <Button 
               size="lg" 
-              colorScheme="blue" 
+              colorScheme="green" 
+              leftIcon={<Icon as={FaSpotify} boxSize={5} />}
               onClick={handleGetStarted}
               mt={8}
+              px={8}
+              py={6}
+              fontSize="lg"
+              borderRadius="full"
+              bgColor="#1DB954"
+              _hover={{ bgColor: "#1ED760" }}
+              _active={{ bgColor: "#1AA64B" }}
+              fontWeight="bold"
+              boxShadow="md"
             >
-              {status === 'authenticated' ? 'Find Your Game' : 'Connect with Spotify'}
+              {status === 'authenticated' ? 'Get Started' : 'Connect with Spotify'}
             </Button>
           </VStack>
         </Container>
