@@ -17,7 +17,6 @@ import {
   AlertIcon,
   AlertTitle,
   AlertDescription,
-  Progress,
 } from '@chakra-ui/react';
 import SearchBar from '@/app/components/search/SearchBar';
 import SearchResults from '@/app/components/search/SearchResults';
@@ -34,8 +33,6 @@ export default function SearchPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
-  const [progressValue, setProgressValue] = useState(0);
-  const [progressStage, setProgressStage] = useState('');
   const { setSelectedGame, setSearchResult, setAiSuggestions, updateSpotifyTracks } = useAtmosphere();
   const router = useRouter();
   const toast = useToast();
@@ -106,8 +103,6 @@ export default function SearchPage() {
     }
     
     setIsGeneratingAI(true);
-    setProgressValue(20);
-    setProgressStage('Analyzing game data...');
     
     try {
       // Create a simple atmosphere settings object for the AI
@@ -120,15 +115,9 @@ export default function SearchPage() {
         era: 'modern',
       };
 
-      setProgressValue(40);
-      setProgressStage('Generating music recommendations...');
-      
       // Call the AI service
       const aiResponse = await generateMusicRecommendations(game, atmosphereSettings);
 
-      setProgressValue(70);
-      setProgressStage('Processing recommendations...');
-      
       // Log both genres and keywords to console for debugging
       console.log('AI suggested genres:', aiResponse.genres || []);
       console.log('AI suggested keywords:', aiResponse.keywords || []);
@@ -140,9 +129,6 @@ export default function SearchPage() {
         aiResponse.explanation || "Generated based on the board game's theme and mechanics."
       );
 
-      setProgressValue(90);
-      setProgressStage('Preparing atmosphere page...');
-      
       return true;
     } catch (err) {
       console.error('Error generating AI suggestions:', err);
@@ -155,7 +141,7 @@ export default function SearchPage() {
       });
       return false;
     } finally {
-      // We'll keep the progress bar and loading state until navigation
+      setIsGeneratingAI(false);
     }
   }, [setAiSuggestions, toast, session?.user?.accessToken, status]);
 
@@ -188,28 +174,13 @@ export default function SearchPage() {
       return;
     }
     
-    // Start progress
-    setProgressValue(10);
-    setProgressStage('Initializing Mr Beast...');
-    setIsGeneratingAI(true);
-    
     // Generate AI suggestions before navigating
     const success = await generateAiSuggestions(game);
     
     // Only navigate if we successfully generated suggestions or the user is authenticated
     if (success || (status === 'authenticated' && session?.user?.accessToken)) {
-      setProgressValue(100);
-      setProgressStage('Ready! Redirecting...');
-      
-      // Short delay for UX before navigation
-      setTimeout(() => {
-        // Navigate to atmosphere page with a query param to trigger auto-search
-        router.push('/atmosphere?autoSearch=true');
-      }, 500);
-    } else {
-      setIsGeneratingAI(false);
-      setProgressValue(0);
-      setProgressStage('');
+      // Navigate to atmosphere page
+      router.push('/atmosphere');
     }
   }, [router, selectedGameId, generateAiSuggestions, toast, status, session?.user?.accessToken]);
 
@@ -217,28 +188,6 @@ export default function SearchPage() {
     <Box bg={bgColor} minH="100vh" py={8}>
       <Container maxW="container.xl">
         <VStack spacing={8} align="stretch">
-          {/* Progress bar that appears when generating */}
-          {isGeneratingAI && (
-            <Box position="fixed" top="0" left="0" right="0" zIndex="1000">
-              <Progress 
-                value={progressValue} 
-                size="sm" 
-                colorScheme="green" 
-                isAnimated
-                hasStripe
-              />
-              <Box 
-                bg={useColorModeValue('white', 'gray.800')} 
-                p={2} 
-                textAlign="center"
-                borderBottomWidth="1px"
-                borderColor={useColorModeValue('gray.200', 'gray.700')}
-              >
-                <Text fontSize="sm" fontWeight="medium">{progressStage}</Text>
-              </Box>
-            </Box>
-          )}
-          
           <Box textAlign="center" mb={8}>
             <Heading as="h1" size="2xl" mb={4} color={textColor}>
               Find Your Board Game
@@ -303,8 +252,7 @@ export default function SearchPage() {
                   onClick={handleContinue}
                   px={8}
                   isLoading={isGeneratingAI}
-                  loadingText={progressStage || "Generating Game Atmosphere..."}
-                  disabled={isGeneratingAI}
+                  loadingText="Generating Game Atmosphere..."
                 >
                   Invoke Mr Beast!
                 </Button>
