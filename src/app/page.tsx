@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { FaMusic, FaDice, FaSpotify } from 'react-icons/fa';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 export default function Home() {
   const router = useRouter();
@@ -179,6 +179,39 @@ export default function Home() {
               {status === 'authenticated' ? 'Get Started' : 'Connect with Spotify'}
             </Button>
           </VStack>
+        </Container>
+      </Box>
+
+      {/* Disclaimer Footer */}
+      <Box py={6} px={4} borderTopWidth="1px" borderColor={borderColor}>
+        <Container maxW="container.xl">
+          <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align="center" gap={4}>
+            <Text 
+              fontSize="sm" 
+              color={useColorModeValue('gray.500', 'gray.400')} 
+            >
+              Not affiliated with Spotify or BoardGameGeek. Created for board game enthusiasts.
+            </Text>
+            
+            {status === 'authenticated' ? (
+              <HStack spacing={4}>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => router.push('/profile')}
+                >
+                  Profile
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                >
+                  Sign Out
+                </Button>
+              </HStack>
+            ) : null}
+          </Flex>
         </Container>
       </Box>
     </Box>
