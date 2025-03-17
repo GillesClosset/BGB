@@ -15,7 +15,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { SearchResult } from '@/app/types';
+import { SearchResult } from '@/app/types/index';
 
 interface SearchResultsProps {
   results: SearchResult[];
