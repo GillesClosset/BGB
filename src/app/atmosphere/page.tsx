@@ -75,18 +75,19 @@ export default function AtmospherePage() {
 
   // Define the glowing animation keyframes
   const backgroundAnim = keyframes`
-    0%, 100% {
+    0% {
       background-position: 0% 50%;
-      transform: skew(0deg);
     }
     50% {
-      background-position: 140% 50%;
-      transform: skew(-1deg);
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
     }
   `;
 
   // Convert to string value for use in Chakra
-  const backgroundAnimation = `${backgroundAnim} 8s ease-in-out infinite`;
+  const backgroundAnimation = `${backgroundAnim} 15s ease infinite`;
 
   // Redirect to search if no game is selected
   useEffect(() => {
@@ -1024,22 +1025,26 @@ export default function AtmospherePage() {
                 <Box position="relative" zIndex="2">
                 <Button 
                   mt={4} 
-                  bgGradient="linear(to-r, #ff36ab, #2e4bff)"
+                  bgGradient="linear(to-r, #ff36ab, #9644db, #2e4bff, #9644db, #ff36ab)"
                   color="white"
                   boxShadow="0 0 15px rgba(255, 54, 171, 0.5)"
                   transition="all 0.3s ease"
+                  backgroundSize="400% 100%"
+                  animation={backgroundAnimation}
                   _hover={{
-                    bgGradient: "linear(to-r, #ff45b7, #3e5aff)",
+                    bgGradient: "linear(to-r, #ff45b7, #a655e7, #3e5aff, #a655e7, #ff45b7)",
                     boxShadow: "0 0 20px rgba(255, 54, 171, 0.7)",
                     opacity: 0.9
                   }}
                   _active={{
-                    bgGradient: "linear(to-r, #e62e98, #233ddb)",
+                    bgGradient: "linear(to-r, #e62e98, #8639c7, #233ddb, #8639c7, #e62e98)",
                     boxShadow: "0 0 10px rgba(255, 54, 171, 0.4)",
                     opacity: 1
                   }}
                   _disabled={{
-                    bgGradient: "linear(to-r, #ff36ab, #2e4bff)",
+                    bgGradient: "linear(to-r, #ff36ab, #9644db, #2e4bff, #9644db, #ff36ab)",
+                    backgroundSize: "400% 100%",
+                    animation: "none",
                     opacity: 0.6,
                     boxShadow: "none",
                     cursor: "not-allowed"
@@ -1158,22 +1163,26 @@ export default function AtmospherePage() {
                 <Box position="relative" zIndex="2">
                 <Button 
                   mt={4} 
-                  bgGradient="linear(to-r, #ffcc00, #ff8800)"
+                  bgGradient="linear(to-r, #ffc226, #ff9d2b, #ff7730, #ff9d2b, #ffc226)"
                   color="white"
-                  boxShadow="0 0 15px rgba(255, 179, 0, 0.5)"
+                  boxShadow="0 0 15px rgba(255, 194, 38, 0.5)"
                   transition="all 0.3s ease"
+                  backgroundSize="400% 100%"
+                  animation={backgroundAnimation}
                   _hover={{
-                    bgGradient: "linear(to-r, #ffd633, #ff9933)",
-                    boxShadow: "0 0 20px rgba(255, 179, 0, 0.7)",
+                    bgGradient: "linear(to-r, #ffcb3d, #ffa642, #ff8542, #ffa642, #ffcb3d)",
+                    boxShadow: "0 0 20px rgba(255, 194, 38, 0.7)",
                     opacity: 0.9
                   }}
                   _active={{
-                    bgGradient: "linear(to-r, #e6b800, #e67a00)",
-                    boxShadow: "0 0 10px rgba(255, 179, 0, 0.4)",
+                    bgGradient: "linear(to-r, #e6af22, #e69126, #e66a2b, #e69126, #e6af22)",
+                    boxShadow: "0 0 10px rgba(255, 194, 38, 0.4)",
                     opacity: 1
                   }}
                   _disabled={{
-                    bgGradient: "linear(to-r, #ffcc00, #ff8800)",
+                    bgGradient: "linear(to-r, #ffc226, #ff9d2b, #ff7730, #ff9d2b, #ffc226)",
+                    backgroundSize: "400% 100%",
+                    animation: "none",
                     opacity: 0.6,
                     boxShadow: "none",
                     cursor: "not-allowed"
