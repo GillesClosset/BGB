@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -19,6 +19,12 @@ import {
   StatNumber,
   StatHelpText,
   Icon,
+  Badge,
+  FormControl,
+  FormLabel,
+  Textarea,
+  useToast,
+  Input,
 } from '@chakra-ui/react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -27,6 +33,10 @@ import { FaSpotify, FaMusic } from 'react-icons/fa';
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const toast = useToast();
+  
+  const [feedback, setFeedback] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const cardBg = useColorModeValue('white', 'gray.800');
@@ -50,6 +60,41 @@ export default function ProfilePage() {
   if (!session) {
     return null; // Will be redirected by the useEffect
   }
+  
+  const handleSubmitFeedback = async () => {
+    if (!feedback.trim()) {
+      toast({
+        title: 'Feedback is empty',
+        description: 'Please enter your feedback before submitting.',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    // Simulate API call for feedback submission
+    setTimeout(() => {
+      toast({
+        title: 'Feedback submitted',
+        description: 'Thank you for your feedback!',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+      setFeedback('');
+      setIsSubmitting(false);
+    }, 1000);
+    
+    // In a real application, you would send this to your backend
+    // const response = await fetch('/api/feedback', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ feedback, userId: session?.user?.id }),
+    //   headers: { 'Content-Type': 'application/json' }
+    // });
+  };
   
   return (
     <Box bg={bgColor} minH="100vh" py={8}>
@@ -95,7 +140,7 @@ export default function ProfilePage() {
           </Flex>
           
           {/* Stats Section */}
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
             <Stat
               bg={cardBg}
               p={6}
@@ -104,12 +149,17 @@ export default function ProfilePage() {
               borderColor={borderColor}
               shadow="md"
             >
-              <StatLabel>Created Playlists</StatLabel>
+              <Flex align="center" gap={2}>
+                <StatLabel>Created Playlists</StatLabel>
+                <Text as="span" fontSize="xs" fontStyle="italic" color="gray.500">
+                  work in progress
+                </Text>
+              </Flex>
               <StatNumber>0</StatNumber>
               <StatHelpText>Start creating playlists for your games</StatHelpText>
             </Stat>
             
-            <Stat
+            <Box
               bg={cardBg}
               p={6}
               borderRadius="lg"
@@ -117,24 +167,93 @@ export default function ProfilePage() {
               borderColor={borderColor}
               shadow="md"
             >
-              <StatLabel>Games Explored</StatLabel>
-              <StatNumber>0</StatNumber>
-              <StatHelpText>Browse games to increase this number</StatHelpText>
-            </Stat>
-            
-            <Stat
-              bg={cardBg}
-              p={6}
-              borderRadius="lg"
-              borderWidth="1px"
-              borderColor={borderColor}
-              shadow="md"
-            >
-              <StatLabel>Music Genres</StatLabel>
-              <StatNumber>0</StatNumber>
-              <StatHelpText>Genres used in your playlists</StatHelpText>
-            </Stat>
+              <VStack align="stretch" spacing={4}>
+                <Flex align="center" gap={2}>
+                  <Heading size="md">Share Your Feedback</Heading>
+                  <Text as="span" fontSize="xs" fontStyle="italic" color="gray.500">
+                    work in progress
+                  </Text>
+                </Flex>
+                <Text fontSize="sm" color="gray.500">
+                  We'd love to hear your thoughts on how we can improve the app!
+                </Text>
+                
+                <FormControl>
+                  <Textarea
+                    placeholder="Your feedback is valuable to us..."
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    size="md"
+                    resize="vertical"
+                    minH="100px"
+                  />
+                </FormControl>
+                
+                <Button
+                  colorScheme="blue"
+                  isLoading={isSubmitting}
+                  loadingText="Submitting"
+                  onClick={handleSubmitFeedback}
+                >
+                  Submit Feedback
+                </Button>
+              </VStack>
+            </Box>
           </SimpleGrid>
+          
+          {/* Pro Section */}
+          <Box
+            bg={cardBg}
+            p={6}
+            borderRadius="lg"
+            borderWidth="1px"
+            borderColor={borderColor}
+            shadow="md"
+          >
+            <VStack align="stretch" spacing={6}>
+              <Heading size="lg">Pro</Heading>
+              
+              <Text>
+                By being a Pro User, you're primarily helping us keep the app running and improving. 
+                As a thank you, you'll also gain access to these exclusive features below!
+              </Text>
+              
+              <Flex direction={{ base: 'column', md: 'row' }} align="center" gap={4}>
+                <Button 
+                  isDisabled={true}
+                  colorScheme="gray"
+                  size="lg"
+                >
+                  Switch to Pro
+                </Button>
+                <Text fontWeight="medium" color="gray.500">Coming Soon</Text>
+              </Flex>
+              
+              <Divider />
+              
+              <VStack align="stretch" spacing={4}>
+                <Flex align="center" gap={2}>
+                  <Heading size="md">Your Game Library</Heading>
+                  <Badge colorScheme="purple">pro only</Badge>
+                </Flex>
+                
+                <Flex align="center" gap={2}>
+                  <Heading size="md">Excluded Music Genres</Heading>
+                  <Badge colorScheme="purple">pro only</Badge>
+                </Flex>
+                
+                <Flex align="center" gap={2}>
+                  <Heading size="md">Saved Playlists</Heading>
+                  <Badge colorScheme="purple">pro only</Badge>
+                </Flex>
+                
+                <Flex align="center" gap={2}>
+                  <Heading size="md">Editable Playlists</Heading>
+                  <Badge colorScheme="purple">pro only</Badge>
+                </Flex>
+              </VStack>
+            </VStack>
+          </Box>
           
           {/* Future: Recent Activity, Saved Playlists, etc. */}
         </VStack>
