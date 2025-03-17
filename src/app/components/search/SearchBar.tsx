@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import { SearchIcon, CloseIcon } from '@chakra-ui/icons';
 import { searchBoardGames } from '@/app/lib/boardgames';
-import { SearchResult } from '@/app/types';
+import { SearchResult } from '@/app/types/index';
 
 interface SearchBarProps {
   onSelectGame: (game: SearchResult) => void;
