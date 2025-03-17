@@ -84,7 +84,7 @@ export default function Home() {
               position="relative"
             >
               <Image 
-                src="/images/hero-image.png" 
+                src="/images/hero-image_small.jpg" 
                 alt="Board games and music" 
                 fallbackSrc="https://placehold.co/400x400/1DB954/FFFFFF?text=BoardGame+Beats"
                 borderRadius="lg"
@@ -190,7 +190,7 @@ export default function Home() {
               fontSize="sm" 
               color={useColorModeValue('gray.500', 'gray.400')} 
             >
-              Not affiliated with Spotify or BoardGameGeek. Created for board game enthusiasts.
+              Not affiliated with Spotify or BoardGameGeek. Created for board game enthusiasts. AI powered by OVHcloud AI Endpoints
             </Text>
             
             {status === 'authenticated' ? (

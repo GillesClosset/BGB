@@ -50,7 +50,7 @@ export default function NavHeader() {
         {/* Logo/Home Link */}
         <HStack spacing={3} cursor="pointer" onClick={() => router.push('/')}>
           <Image 
-            src="/images/MrBeats_icon_round.png" 
+            src="/images/MrBeats_icon_round_small.png" 
             alt="Mr Beats Icon" 
             boxSize="30px"
           />
