@@ -71,10 +71,9 @@ export const getTracks = async (trackIds: string[]) => {
  */
 export const createPlaylist = async (userId: string, name: string, description: string, isPublic = true) => {
   try {
-    const response = await spotifyApi.createPlaylist(userId, {
-      name,
+    const response = await spotifyApi.createPlaylist(name, {
       description,
-      public: isPublic,
+      public: isPublic
     });
     return response.body;
   } catch (error) {
