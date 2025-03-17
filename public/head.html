@@ -1,8 +1,20 @@
 <!-- This file contains HTML elements that will be automatically injected into the <head> of all pages -->
 <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-<link rel="icon" href="/favicon.png" type="image/png" />
+
+<!-- Firefox-specific favicons - Firefox has different requirements -->
+<link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/images/favicon-16x16_black.png" type="image/png" sizes="16x16" />
+<link rel="icon" href="/images/favicon-32x32_black.png" type="image/png" sizes="32x32" />
+
+<!-- Special meta tag for MS browsers -->
 <meta name="msapplication-TileImage" content="/favicon.ico" />
+<meta name="msapplication-TileColor" content="#1DB954" />
+
+<!-- Apple icons -->
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<!-- Safari requires this to show the custom icon on the home screen -->
-<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png" /> 
+<link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png" />
+
+<!-- Cache control for favicons -->
+<meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0" />
+<meta http-equiv="expires" content="0" /> 

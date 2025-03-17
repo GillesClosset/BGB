@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { FaSpotify, FaUser, FaSignOutAlt } from 'react-icons/fa';
 import Link from 'next/link';
+import NextLink from 'next/link';
 
 export default function NavHeader() {
   const { data: session } = useSession();
@@ -97,6 +98,20 @@ export default function NavHeader() {
             Connect with Spotify
           </Button>
         )}
+
+        {/* Firefox Favicon Fix link - only visible on smaller screens */}
+        <Text 
+          display={{ base: 'none', md: 'block' }}
+          fontSize="xs" 
+          color="gray.500"
+          position="absolute"
+          right="20px"
+          bottom="5px"
+        >
+          <Link as={NextLink} href="/clear-cache" textDecoration="underline">
+            Favicon Issues?
+          </Link>
+        </Text>
       </Flex>
     </Box>
   );
