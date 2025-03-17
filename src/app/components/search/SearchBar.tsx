@@ -21,9 +21,10 @@ import { SearchResult } from '@/app/types/index';
 
 interface SearchBarProps {
   onSelectGame: (game: SearchResult) => void;
+  onSearch?: (results: SearchResult[]) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSelectGame }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onSelectGame, onSearch }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,12 +74,16 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectGame }) => {
 
     try {
       const searchResults = await searchBoardGames(searchQuery);
-      setResults(searchResults.map(game => ({
+      const transformedResults = searchResults.map(game => ({
         id: game.id,
         name: game.name,
         yearPublished: parseInt(game.yearPublished) || 0,
         image: '' // Image will be populated when game details are fetched
-      })));
+      }));
+      setResults(transformedResults);
+      if (onSearch) {
+        onSearch(transformedResults);
+      }
     } catch (err) {
       setError('Failed to search for games. Please try again.');
       toast({

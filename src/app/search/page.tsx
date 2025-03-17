@@ -21,7 +21,8 @@ import {
 import SearchBar from '@/app/components/search/SearchBar';
 import SearchResults from '@/app/components/search/SearchResults';
 import GameDetails from '@/app/components/search/GameDetails';
-import { SearchResult, BoardGame } from '@/app/types';
+import { SearchResult } from '@/app/types/index';
+import { BoardGame } from '@/app/types';
 import { useAtmosphere } from '@/app/context/atmosphere-context';
 import { useRouter } from 'next/navigation';
 import { generateMusicRecommendations } from '@/app/lib/ai';
@@ -219,6 +220,7 @@ export default function SearchPage() {
 
           <SearchBar 
             onSelectGame={handleSelectGame}
+            onSearch={handleSearch}
           />
 
           {searchResults.length > 0 && !selectedGameId && (
