@@ -17,6 +17,7 @@ import {
   useColorModeValue,
   Heading,
   Badge,
+  useToast,
 } from '@chakra-ui/react';
 import { AddIcon } from '@chakra-ui/icons';
 import { getAvailableGenres } from '@/app/lib/spotify';
@@ -41,11 +42,13 @@ const GenreSelector: React.FC<GenreSelectorProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const toast = useToast();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
-  const tagBg = useColorModeValue('blue.100', 'blue.800');
+  const tagBg = useColorModeValue('gray.100', 'gray.700');
   const aiTagBg = useColorModeValue('purple.100', 'purple.800');
+  const tagTextColor = useColorModeValue('gray.800', 'white');
 
   // Load available genres on component mount
   useEffect(() => {
@@ -162,7 +165,7 @@ const GenreSelector: React.FC<GenreSelectorProps> = ({
             borderRadius="full" 
             variant="solid" 
             bg={isAiSuggested(genre) ? aiTagBg : tagBg}
-            color={useColorModeValue('gray.800', 'white')}
+            color={tagTextColor}
           >
             <TagLabel>{genre}</TagLabel>
             <TagCloseButton onClick={() => handleRemoveGenre(genre)} />

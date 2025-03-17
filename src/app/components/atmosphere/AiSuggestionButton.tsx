@@ -130,7 +130,7 @@ const AiSuggestionButton: React.FC<AiSuggestionButtonProps> = ({
         <Box textAlign="center" mt={4}>
           <Spinner size="sm" mr={2} />
           <Text display="inline">
-            Analyzing {game?.name}'s themes and mechanics...
+            Analyzing {game?.name}&apos;s themes and mechanics...
           </Text>
         </Box>
       )}

@@ -29,24 +29,21 @@ import { useSession } from 'next-auth/react';
 
 export default function PlaylistPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const { selectedGame, selectedGenres, trackCount, spotifyTracks } = useAtmosphere();
   const toast = useToast();
-  const {
-    selectedGame,
-    selectedGenres,
-    trackCount,
-  } = useAtmosphere();
-
-  const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [savedPlaylistUrl, setSavedPlaylistUrl] = useState<string | null>(null);
+  const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
 
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const cardBg = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'gray.100');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const descriptionTextColor = useColorModeValue('gray.600', 'gray.400');
 
   // Redirect to atmosphere if no game is selected
   useEffect(() => {
@@ -117,7 +114,7 @@ export default function PlaylistPage() {
   };
 
   const handleSavePlaylist = async () => {
-    if (!selectedGame || !session?.user?.id || !session?.user?.accessToken || tracks.length === 0) return;
+    if (!selectedGame || !session?.user?.id || !session?.user?.accessToken || spotifyTracks.length === 0) return;
 
     setIsSaving(true);
 
@@ -137,7 +134,7 @@ export default function PlaylistPage() {
       // Add tracks to the playlist
       await addTracksToPlaylist(
         playlist.id,
-        tracks.map(track => track.uri)
+        spotifyTracks.map(track => track.uri)
       );
 
       // Save the playlist URL for the user to open
@@ -192,8 +189,8 @@ export default function PlaylistPage() {
             <Heading as="h1" size="2xl" mb={4} color={textColor}>
               Your {selectedGame.name} Soundtrack
             </Heading>
-            <Text fontSize="lg" color={useColorModeValue('gray.600', 'gray.400')}>
-              A custom playlist based on your game's atmosphere
+            <Text fontSize="lg" color={descriptionTextColor}>
+              A custom playlist based on your game&apos;s atmosphere
             </Text>
           </Box>
 
@@ -211,7 +208,7 @@ export default function PlaylistPage() {
           ) : (
             <>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 4 }} spacing={6}>
-                {tracks.map((track) => (
+                {spotifyTracks.map((track) => (
                   <Box
                     key={track.id}
                     borderWidth="1px"
@@ -264,7 +261,7 @@ export default function PlaylistPage() {
                   onClick={handleSavePlaylist}
                   isLoading={isSaving}
                   loadingText="Saving..."
-                  isDisabled={!session?.user?.id || tracks.length === 0}
+                  isDisabled={!session?.user?.id || spotifyTracks.length === 0}
                 >
                   Save to Spotify
                 </Button>

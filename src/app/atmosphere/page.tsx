@@ -70,6 +70,8 @@ export default function AtmospherePage() {
   const cardBg = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'gray.100');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const explanationTextColor = useColorModeValue('gray.600', 'gray.400');
+  const gameTextColor = useColorModeValue('gray.600', 'gray.400');
 
   // Define the glowing animation keyframes
   const backgroundAnim = keyframes`
@@ -909,7 +911,7 @@ export default function AtmospherePage() {
             <Heading as="h1" size="2xl" mb={4} color={textColor}>
                 Mr Beats has spoken!
             </Heading>
-            <Text fontSize="lg" color={useColorModeValue('gray.600', 'gray.400')}>
+            <Text fontSize="lg" color={gameTextColor}>
                 Tailor your playlist for {selectedGame.name}
             </Text>
           </Box>
@@ -927,7 +929,7 @@ export default function AtmospherePage() {
               <Heading as="h3" size="md" mb={3} color={textColor}>
                 My Atmosphere for you
               </Heading>
-              <Text color={useColorModeValue('gray.600', 'gray.400')}>
+              <Text color={explanationTextColor}>
                 {aiExplanation}
               </Text>
             </Box>
@@ -1022,7 +1024,26 @@ export default function AtmospherePage() {
                 <Box position="relative" zIndex="2">
                 <Button 
                   mt={4} 
-                    colorScheme="purple"
+                  bgGradient="linear(to-r, #ff36ab, #2e4bff)"
+                  color="white"
+                  boxShadow="0 0 15px rgba(255, 54, 171, 0.5)"
+                  transition="all 0.3s ease"
+                  _hover={{
+                    bgGradient: "linear(to-r, #ff45b7, #3e5aff)",
+                    boxShadow: "0 0 20px rgba(255, 54, 171, 0.7)",
+                    opacity: 0.9
+                  }}
+                  _active={{
+                    bgGradient: "linear(to-r, #e62e98, #233ddb)",
+                    boxShadow: "0 0 10px rgba(255, 54, 171, 0.4)",
+                    opacity: 1
+                  }}
+                  _disabled={{
+                    bgGradient: "linear(to-r, #ff36ab, #2e4bff)",
+                    opacity: 0.6,
+                    boxShadow: "none",
+                    cursor: "not-allowed"
+                  }}
                   onClick={() => {
                     if (isSearching) {
                       return;
@@ -1137,7 +1158,26 @@ export default function AtmospherePage() {
                 <Box position="relative" zIndex="2">
                 <Button 
                   mt={4} 
-                    colorScheme="purple"
+                  bgGradient="linear(to-r, #ffcc00, #ff8800)"
+                  color="white"
+                  boxShadow="0 0 15px rgba(255, 179, 0, 0.5)"
+                  transition="all 0.3s ease"
+                  _hover={{
+                    bgGradient: "linear(to-r, #ffd633, #ff9933)",
+                    boxShadow: "0 0 20px rgba(255, 179, 0, 0.7)",
+                    opacity: 0.9
+                  }}
+                  _active={{
+                    bgGradient: "linear(to-r, #e6b800, #e67a00)",
+                    boxShadow: "0 0 10px rgba(255, 179, 0, 0.4)",
+                    opacity: 1
+                  }}
+                  _disabled={{
+                    bgGradient: "linear(to-r, #ffcc00, #ff8800)",
+                    opacity: 0.6,
+                    boxShadow: "none",
+                    cursor: "not-allowed"
+                  }}
                   onClick={() => {
                     if (isSearching) {
                       return;
@@ -1291,7 +1331,7 @@ export default function AtmospherePage() {
             ) : (
               <Text textAlign="center" color="gray.500" py={10}>
                 Music suggestions have been generated based on {selectedGame.name}. 
-                Click "Mr Beats Atmosphere" or "Alternate Selection" to find matching tracks.
+                Click &quot;Mr Beats Atmosphere&quot; or &quot;Alternate Selection&quot; to find matching tracks.
               </Text>
             )}
           </Box>

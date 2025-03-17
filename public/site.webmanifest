@@ -16,6 +16,21 @@
             "src": "/apple-touch-icon.png",
             "sizes": "180x180",
             "type": "image/png"
+        },
+        {
+            "src": "/images/favicon-16x16_black.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/favicon-32x32_black.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/images/MrBeats_icon_round_small.png",
+            "sizes": "48x48",
+            "type": "image/png"
         }
     ],
     "theme_color": "#1DB954",

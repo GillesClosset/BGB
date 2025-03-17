@@ -136,9 +136,9 @@ const TrackCount: React.FC<TrackCountProps> = ({
               </HStack>
               <Text fontSize="sm" color={textColor}>
                 {playingTime !== plannedPlayTime ? (
-                  <>Game's suggested play time: <Text as="span" fontWeight="bold">{formatPlayTime(playingTime)}</Text></>
+                  <>Game&apos;s suggested play time: <Text as="span" fontWeight="bold">{formatPlayTime(playingTime)}</Text></>
                 ) : (
-                  <>Using game's suggested play time</>
+                  <>Using game&apos;s suggested play time</>
                 )}
               </Text>
             </Flex>

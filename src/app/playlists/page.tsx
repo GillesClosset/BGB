@@ -148,7 +148,7 @@ export default function PlaylistsPage() {
           {/* Placeholder for when no playlists exist */}
           <Box py={10} textAlign="center">
             <Text fontSize="lg" mb={6}>
-              You haven't created any board game playlists yet.
+              You haven&apos;t created any board game playlists yet.
             </Text>
             <Button
               colorScheme="brand"
