@@ -1,4 +1,4 @@
-  'use client';
+'use client';
 
 import React, { useEffect, useCallback, useState } from 'react';
 import {
@@ -27,6 +27,7 @@ import {
   Icon,
   Badge,
   Center,
+  keyframes,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
@@ -69,6 +70,21 @@ export default function AtmospherePage() {
   const cardBg = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'gray.100');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+
+  // Define the glowing animation keyframes
+  const backgroundAnim = keyframes`
+    0%, 100% {
+      background-position: 0% 50%;
+      transform: skew(0deg);
+    }
+    50% {
+      background-position: 140% 50%;
+      transform: skew(-1deg);
+    }
+  `;
+
+  // Convert to string value for use in Chakra
+  const backgroundAnimation = `${backgroundAnim} 8s ease-in-out infinite`;
 
   // Redirect to search if no game is selected
   useEffect(() => {
@@ -158,7 +174,7 @@ export default function AtmospherePage() {
         isClosable: true,
       });
     }
-    
+
     setIsSearching(true);
     setActiveSearchType('genres');
     clearSpotifyTracks();
@@ -207,13 +223,13 @@ export default function AtmospherePage() {
           paginationCount++;
           
           const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(genre)}&limit=${tracksToFetch}&offset=${offset}`);
-          const data = await response.json();
-          
-          if (response.ok && data.tracks && data.tracks.length > 0) {
-            // Add these tracks to our results
+        const data = await response.json();
+        
+        if (response.ok && data.tracks && data.tracks.length > 0) {
+          // Add these tracks to our results
             console.log(`Found ${data.tracks.length} tracks for genre: ${genre} (page ${offset/SPOTIFY_MAX_LIMIT + 1})`);
-            addSpotifyTracks(data.tracks);
-            foundTracks = true;
+          addSpotifyTracks(data.tracks);
+          foundTracks = true;
             
             // Update counters for pagination
             totalTracksFetched += data.tracks.length;
@@ -224,7 +240,7 @@ export default function AtmospherePage() {
               console.log(`No more tracks available for genre: ${genre} after fetching ${totalTracksFetched} tracks`);
               break;
             }
-          } else {
+        } else {
             // If we get an error or no tracks, stop trying for this genre
             if (!response.ok) {
               console.error(`Error fetching tracks for genre "${genre}":`, data);
@@ -283,13 +299,13 @@ export default function AtmospherePage() {
         // on initial page load AND we have at least found some tracks
         if (spotifyTracks.length < trackCount && !isAutoSearch && spotifyTracks.length > 0) {
           console.log(`Insufficient tracks found (${spotifyTracks.length}/${trackCount})`);
-          toast({
+        toast({
             title: 'Limited track availability',
             description: `Only found ${spotifyTracks.length} tracks. Will create playlist with all available tracks.`,
             status: 'info',
             duration: 4000,
-            isClosable: true,
-          });
+          isClosable: true,
+        });
         }
       }
     } catch (error) {
@@ -420,13 +436,13 @@ export default function AtmospherePage() {
           paginationCount++;
           
           const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(keyword)}&limit=${tracksToFetch}&offset=${offset}`);
-          const data = await response.json();
-          
-          if (response.ok && data.tracks && data.tracks.length > 0) {
-            // Add these tracks to our results
+        const data = await response.json();
+        
+        if (response.ok && data.tracks && data.tracks.length > 0) {
+          // Add these tracks to our results
             console.log(`Found ${data.tracks.length} tracks for keyword: ${keyword} (page ${offset/SPOTIFY_MAX_LIMIT + 1})`);
-            addSpotifyTracks(data.tracks);
-            foundTracks = true;
+          addSpotifyTracks(data.tracks);
+          foundTracks = true;
             
             // Update counters for pagination
             totalTracksFetched += data.tracks.length;
@@ -437,7 +453,7 @@ export default function AtmospherePage() {
               console.log(`No more tracks available for keyword: ${keyword} after fetching ${totalTracksFetched} tracks`);
               break;
             }
-          } else {
+        } else {
             // If we get an error or no tracks, stop trying for this keyword
             if (!response.ok) {
               console.error(`Error fetching tracks for keyword "${keyword}":`, data);
@@ -496,13 +512,13 @@ export default function AtmospherePage() {
         // on initial page load AND we have at least found some tracks
         if (spotifyTracks.length < trackCount && !isAutoSearch && spotifyTracks.length > 0) {
           console.log(`Insufficient tracks found (${spotifyTracks.length}/${trackCount})`);
-          toast({
+        toast({
             title: 'Limited track availability',
             description: `Only found ${spotifyTracks.length} tracks. Will create playlist with all available tracks.`,
             status: 'info',
             duration: 4000,
-            isClosable: true,
-          });
+          isClosable: true,
+        });
         }
       }
     } catch (error) {
@@ -748,18 +764,18 @@ export default function AtmospherePage() {
         const trackBatch = finalTrackUris.slice(i, i + MAX_TRACKS_PER_REQUEST);
         
         console.log(`Adding batch of ${trackBatch.length} tracks to playlist (${i+1} to ${Math.min(i+MAX_TRACKS_PER_REQUEST, finalTrackUris.length)})`);
-        
-        const addTracksResponse = await fetch(`/api/spotify?action=addTracksToPlaylist&playlistId=${playlistData.id}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+      
+      const addTracksResponse = await fetch(`/api/spotify?action=addTracksToPlaylist&playlistId=${playlistData.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
             uris: trackBatch,
-          }),
-        });
+        }),
+      });
 
-        if (!addTracksResponse.ok) {
+      if (!addTracksResponse.ok) {
           throw new Error(`Failed to add batch of tracks to playlist (batch ${i/MAX_TRACKS_PER_REQUEST + 1})`);
         }
       }
@@ -778,13 +794,13 @@ export default function AtmospherePage() {
           isClosable: true,
         });
       } else {
-        toast({
-          title: 'Playlist created',
+      toast({
+        title: 'Playlist created',
           description: `Your playlist with ${finalTrackUris.length} tracks has been created in Spotify`,
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
       }
       
       return spotifyUrl;
@@ -870,14 +886,34 @@ export default function AtmospherePage() {
             </Alert>
           )}
 
-          <Box textAlign="center" mb={4}>
+          <Flex 
+            direction={{ base: 'column', md: 'row' }} 
+            align="center" 
+            justify="center" 
+            mb={2} 
+            gap={{ base: 6, md: 10 }}
+            p={4}
+          >
+            <Image
+              src="/images/hero-image_small.jpg"
+              alt="BoardGame Beats"
+              borderRadius="lg"
+              boxShadow="lg"
+              maxW={{ base: '100%', md: '300px' }}
+              maxH={{ base: '200px', md: '250px' }}
+              objectFit="cover"
+              order={{ base: 1, md: 0 }}
+            />
+            
+            <Box textAlign={{ base: 'center', md: 'left' }} order={{ base: 0, md: 1 }}>
             <Heading as="h1" size="2xl" mb={4} color={textColor}>
-              Customize Atmosphere
+                Mr Beats has spoken!
             </Heading>
             <Text fontSize="lg" color={useColorModeValue('gray.600', 'gray.400')}>
-              Tailor the musical atmosphere for {selectedGame.name}
+                Tailor your playlist for {selectedGame.name}
             </Text>
           </Box>
+          </Flex>
 
           {aiExplanation && (
             <Box 
@@ -889,7 +925,7 @@ export default function AtmospherePage() {
               shadow="md"
             >
               <Heading as="h3" size="md" mb={3} color={textColor}>
-                Mr Beats' Atmosphere explained
+                My Atmosphere for you
               </Heading>
               <Text color={useColorModeValue('gray.600', 'gray.400')}>
                 {aiExplanation}
@@ -906,23 +942,88 @@ export default function AtmospherePage() {
                 borderWidth="1px" 
                 borderColor={borderColor}
                 shadow="md"
-                boxShadow={activeSearchType === 'genres' ? '0 0 0 3px rgba(29, 185, 84, 0.6)' : 'md'}
                 transform={activeSearchType === 'genres' ? 'scale(1.03)' : 'scale(1)'}
                 transition="all 0.2s"
+                position="relative"
+                overflow="hidden"
               >
-                {/* GenreSelector component hidden as per user request 
-                <GenreSelector 
-                  selectedGenres={selectedGenres}
-                  onChange={updateSelectedGenres}
-                  aiSuggestedGenres={aiSuggestedGenres}
-                />
-                */}
+                {activeSearchType === 'genres' && (
+                  <>
+                    {/* First glow layer - outer glow */}
+                    <Box
+                      position="absolute"
+                      top="-10px"
+                      right="-10px"
+                      bottom="-10px"
+                      left="-10px"
+                      borderRadius="xl"
+                      background="linear-gradient(-90deg,#007cf0,#00dfd8,#ff0080,#007cf0)"
+                      backgroundSize="400% 100%"
+                      animation={backgroundAnimation}
+                      zIndex="0"
+                      opacity="0.9"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '0',
+                        right: '0',
+                        bottom: '0',
+                        left: '0',
+                        borderRadius: 'xl',
+                        backgroundSize: 'inherit',
+                        backgroundImage: 'inherit',
+                        animation: 'inherit',
+                        filter: 'blur(15px)',
+                      }}
+                    />
+                    
+                    {/* Second glow layer - medium glow */}
+                    <Box
+                      position="absolute"
+                      top="-5px"
+                      right="-5px"
+                      bottom="-5px"
+                      left="-5px"
+                      borderRadius="lg"
+                      background="linear-gradient(-90deg,#007cf0,#00dfd8,#ff0080,#007cf0)"
+                      backgroundSize="400% 100%"
+                      animation={backgroundAnimation}
+                      zIndex="0"
+                      opacity="0.95"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '0',
+                        right: '0',
+                        bottom: '0',
+                        left: '0',
+                        borderRadius: 'lg',
+                        backgroundSize: 'inherit',
+                        backgroundImage: 'inherit',
+                        animation: 'inherit',
+                        filter: 'blur(8px)',
+                      }}
+                    />
+                    
+                    {/* Inner content background */}
+                    <Box
+                      position="absolute"
+                      top="2px"
+                      right="2px"
+                      bottom="2px"
+                      left="2px"
+                      bg={cardBg}
+                      borderRadius="md"
+                      zIndex="1"
+                    />
+                  </>
+                )}
                 
+                <Box position="relative" zIndex="2">
                 <Button 
                   mt={4} 
-                  colorScheme="blue" 
+                    colorScheme="purple"
                   onClick={() => {
-                    // Prevent duplicate calls by checking if already searching
                     if (isSearching) {
                       return;
                     }
@@ -933,11 +1034,18 @@ export default function AtmospherePage() {
                   isLoading={isSearching && activeSearchType === 'genres'}
                   loadingText="Searching..."
                 >
-                  Mr Beats Atmosphere
+                    Mr Beats Atmosphere
                 </Button>
-                <Text fontSize="xs" color={activeSearchType === 'genres' ? '#1DB954' : 'gray.500'} fontWeight={activeSearchType === 'genres' ? 'bold' : 'normal'} textAlign="center" mt={1}>
-                  {activeSearchType === 'genres' && 'Selected'}
+                  <Text 
+                    fontSize="xs" 
+                    color={activeSearchType === 'genres' ? '#1DB954' : 'gray.500'} 
+                    fontWeight={activeSearchType === 'genres' ? 'bold' : 'normal'} 
+                    textAlign="center" 
+                    mt={1}
+                  >
+                    {activeSearchType === 'genres' && 'Selected'}
                 </Text>
+                </Box>
               </Box>
             </GridItem>
 
@@ -949,23 +1057,88 @@ export default function AtmospherePage() {
                 borderWidth="1px" 
                 borderColor={borderColor}
                 shadow="md"
-                boxShadow={activeSearchType === 'keywords' ? '0 0 0 3px rgba(29, 185, 84, 0.6)' : 'md'}
                 transform={activeSearchType === 'keywords' ? 'scale(1.03)' : 'scale(1)'}
                 transition="all 0.2s"
+                position="relative"
+                overflow="hidden"
               >
-                {/* KeywordSelector component hidden as per user request 
-                <KeywordSelector 
-                  selectedKeywords={selectedKeywords}
-                  onChange={updateSelectedKeywords}
-                  aiSuggestedKeywords={aiKeywords}
-                />
-                */}
+                {activeSearchType === 'keywords' && (
+                  <>
+                    {/* First glow layer - outer glow */}
+                    <Box
+                      position="absolute"
+                      top="-10px"
+                      right="-10px"
+                      bottom="-10px"
+                      left="-10px"
+                      borderRadius="xl"
+                      background="linear-gradient(-90deg,#007cf0,#00dfd8,#ff0080,#007cf0)"
+                      backgroundSize="400% 100%"
+                      animation={backgroundAnimation}
+                      zIndex="0"
+                      opacity="0.9"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '0',
+                        right: '0',
+                        bottom: '0',
+                        left: '0',
+                        borderRadius: 'xl',
+                        backgroundSize: 'inherit',
+                        backgroundImage: 'inherit',
+                        animation: 'inherit',
+                        filter: 'blur(15px)',
+                      }}
+                    />
+                    
+                    {/* Second glow layer - medium glow */}
+                    <Box
+                      position="absolute"
+                      top="-5px"
+                      right="-5px"
+                      bottom="-5px"
+                      left="-5px"
+                      borderRadius="lg"
+                      background="linear-gradient(-90deg,#007cf0,#00dfd8,#ff0080,#007cf0)"
+                      backgroundSize="400% 100%"
+                      animation={backgroundAnimation}
+                      zIndex="0"
+                      opacity="0.95"
+                      _after={{
+                        content: '""',
+                        position: 'absolute',
+                        top: '0',
+                        right: '0',
+                        bottom: '0',
+                        left: '0',
+                        borderRadius: 'lg',
+                        backgroundSize: 'inherit',
+                        backgroundImage: 'inherit',
+                        animation: 'inherit',
+                        filter: 'blur(8px)',
+                      }}
+                    />
+                    
+                    {/* Inner content background */}
+                    <Box
+                      position="absolute"
+                      top="2px"
+                      right="2px"
+                      bottom="2px"
+                      left="2px"
+                      bg={cardBg}
+                      borderRadius="md"
+                      zIndex="1"
+                    />
+                  </>
+                )}
                 
+                <Box position="relative" zIndex="2">
                 <Button 
                   mt={4} 
-                  colorScheme="green" 
+                    colorScheme="purple"
                   onClick={() => {
-                    // Prevent duplicate calls by checking if already searching
                     if (isSearching) {
                       return;
                     }
@@ -973,7 +1146,6 @@ export default function AtmospherePage() {
                     console.log('Keyword search button clicked, selected keywords:', selectedKeywords);
                     if (selectedKeywords.length > 0) {
                       console.log('Calling handleSearchByKeywords with:', selectedKeywords);
-                      // Create a copy of the array to avoid reference issues
                       const keywordsToSearch = [...selectedKeywords];
                       handleSearchByKeywords(keywordsToSearch);
                     } else {
@@ -991,11 +1163,18 @@ export default function AtmospherePage() {
                   isLoading={isSearching && activeSearchType === 'keywords'}
                   loadingText="Searching..."
                 >
-                  Alternate Selection
+                    Alternate Selection
                 </Button>
-                <Text fontSize="xs" color={activeSearchType === 'keywords' ? '#1DB954' : 'gray.500'} fontWeight={activeSearchType === 'keywords' ? 'bold' : 'normal'} textAlign="center" mt={1}>
-                  {activeSearchType === 'keywords' && 'Selected'}
+                  <Text 
+                    fontSize="xs" 
+                    color={activeSearchType === 'keywords' ? '#1DB954' : 'gray.500'} 
+                    fontWeight={activeSearchType === 'keywords' ? 'bold' : 'normal'} 
+                    textAlign="center" 
+                    mt={1}
+                  >
+                    {activeSearchType === 'keywords' && 'Selected'}
                 </Text>
+                </Box>
               </Box>
             </GridItem>
           </Grid>
@@ -1081,33 +1260,33 @@ export default function AtmospherePage() {
               </Flex>
             ) : spotifyTracks.length > 0 ? (
               <>
-                <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 5 }} spacing={4}>
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3, xl: 5 }} spacing={4}>
                   {spotifyTracks.slice(0, 25).map((track: SpotifyTrack) => (
-                    <Card key={track.id} overflow="hidden" variant="outline">
-                      <CardBody p={3}>
-                        <Image
-                          src={track.album.images[0]?.url || '/images/music-placeholder.png'}
-                          alt={track.name}
-                          borderRadius="md"
-                          objectFit="cover"
-                          width="100%"
-                          height="160px"
-                        />
-                        <Stack mt={2} spacing={1}>
-                          <Heading size="sm" noOfLines={1} title={track.name}>
-                            {track.name}
-                          </Heading>
-                          <Text fontSize="sm" color="gray.500" noOfLines={1}>
-                            {track.artists.map(artist => artist.name).join(', ')}
-                          </Text>
-                          <Text fontSize="xs" color="gray.400" noOfLines={1}>
-                            {track.album.name}
-                          </Text>
-                        </Stack>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </SimpleGrid>
+                  <Card key={track.id} overflow="hidden" variant="outline">
+                    <CardBody p={3}>
+                      <Image
+                        src={track.album.images[0]?.url || '/images/music-placeholder.png'}
+                        alt={track.name}
+                        borderRadius="md"
+                        objectFit="cover"
+                        width="100%"
+                        height="160px"
+                      />
+                      <Stack mt={2} spacing={1}>
+                        <Heading size="sm" noOfLines={1} title={track.name}>
+                          {track.name}
+                        </Heading>
+                        <Text fontSize="sm" color="gray.500" noOfLines={1}>
+                          {track.artists.map(artist => artist.name).join(', ')}
+                        </Text>
+                        <Text fontSize="xs" color="gray.400" noOfLines={1}>
+                          {track.album.name}
+                        </Text>
+                      </Stack>
+                    </CardBody>
+                  </Card>
+                ))}
+              </SimpleGrid>
               </>
             ) : (
               <Text textAlign="center" color="gray.500" py={10}>
@@ -1121,9 +1300,9 @@ export default function AtmospherePage() {
 
           <Flex justify="center" mt={4} direction="column" align="center" gap={4}>
             {status === 'authenticated' ? (
-              <Button 
+                <Button 
                 colorScheme="green" 
-                size="lg" 
+                  size="lg" 
                 onClick={async () => {
                   if (playlistUrl) {
                     // If playlist already exists, just open it
@@ -1143,9 +1322,9 @@ export default function AtmospherePage() {
                 }}
                 px={10}
                 py={6}
-                isLoading={isCreatingPlaylist}
+                  isLoading={isCreatingPlaylist}
                 loadingText={spotifyTracks.length < trackCount && !isSearching ? "Refreshing tracks..." : "Creating Playlist"}
-                isDisabled={spotifyTracks.length === 0}
+                  isDisabled={spotifyTracks.length === 0}
                 leftIcon={<Icon as={FaSpotify} boxSize={5} />}
                 borderRadius="full"
                 bgColor="#1DB954"
@@ -1156,7 +1335,7 @@ export default function AtmospherePage() {
                 boxShadow="md"
               >
                 {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
-              </Button>
+                </Button>
             ) : (
               <Button 
                 colorScheme="green" 
