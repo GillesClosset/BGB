@@ -252,7 +252,7 @@ export default function SearchPage() {
                   onClick={handleContinue}
                   px={8}
                   isLoading={isGeneratingAI}
-                  loadingText="Generating Game Atmosphere..."
+                  loadingText="Invoking Mr Beast!"
                 >
                   Invoke Mr Beast!
                 </Button>
