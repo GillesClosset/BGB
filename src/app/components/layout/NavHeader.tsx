@@ -14,6 +14,7 @@ import {
   Icon,
   useColorModeValue,
   HStack,
+  Image,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
@@ -48,7 +49,11 @@ export default function NavHeader() {
       >
         {/* Logo/Home Link */}
         <HStack spacing={3} cursor="pointer" onClick={() => router.push('/')}>
-          <Icon as={FaSpotify} boxSize={6} color="green.500" />
+          <Image 
+            src="/images/MrBeats_icon_round.png" 
+            alt="Mr Beats Icon" 
+            boxSize="30px"
+          />
           <Text fontWeight="bold" fontSize="xl">BoardGame Beats</Text>
         </HStack>
 
