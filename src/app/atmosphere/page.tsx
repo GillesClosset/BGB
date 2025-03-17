@@ -1,4 +1,4 @@
-'use client';
+  'use client';
 
 import React, { useEffect, useCallback, useState } from 'react';
 import {
@@ -27,9 +27,8 @@ import {
   Icon,
   Badge,
   Center,
-  Progress,
 } from '@chakra-ui/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
 import { useAtmosphere } from '@/app/context/atmosphere-context';
 import GenreSelector from '@/app/components/atmosphere/GenreSelector';
@@ -40,7 +39,6 @@ import { FaSpotify } from 'react-icons/fa';
 
 export default function AtmospherePage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const {
     selectedGame,
@@ -71,10 +69,6 @@ export default function AtmospherePage() {
   const cardBg = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.800', 'gray.100');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
-
-  const [autoSearchProgress, setAutoSearchProgress] = useState(0);
-  const [autoSearchStage, setAutoSearchStage] = useState('');
-  const [isAutoSearching, setIsAutoSearching] = useState(false);
 
   // Redirect to search if no game is selected
   useEffect(() => {
@@ -528,65 +522,17 @@ export default function AtmospherePage() {
   
   // Auto-search when arriving at the page with AI suggestions but no tracks
   useEffect(() => {
-    const autoSearch = searchParams.get('autoSearch');
-    
-    // If we have the autoSearch parameter and we have genres or keywords to search with
-    if (autoSearch === 'true' && 
-        selectedGame && 
-        session?.user?.accessToken && 
-        !isSearching && 
-        !isAutoSearching) {
-      
-      setIsAutoSearching(true);
-      setAutoSearchProgress(10);
-      setAutoSearchStage('Preparing to search...');
-      
-      // Determine which search method to use based on what we have
-      const performSearch = async () => {
-        try {
-          if (selectedGenres.length > 0) {
-            setAutoSearchProgress(30);
-            setAutoSearchStage('Searching by genres...');
-            console.log('Auto-searching by genres from URL parameter');
-            await handleSearchByGenres(selectedGenres, true);
-          } else if (selectedKeywords.length > 0) {
-            setAutoSearchProgress(30);
-            setAutoSearchStage('Searching by keywords...');
-            console.log('Auto-searching by keywords from URL parameter');
-            await handleSearchByKeywords(selectedKeywords, true);
-          }
-          
-          setAutoSearchProgress(100);
-          setAutoSearchStage('Search complete!');
-          
-          // Clear the progress after a delay
-          setTimeout(() => {
-            setIsAutoSearching(false);
-            setAutoSearchProgress(0);
-            setAutoSearchStage('');
-          }, 1000);
-        } catch (error) {
-          console.error('Error during auto-search:', error);
-          setIsAutoSearching(false);
-          setAutoSearchProgress(0);
-          setAutoSearchStage('');
-        }
-      };
-      
-      performSearch();
-    } 
-    // Original auto-search logic for page load without URL parameter
-    else if (selectedGame && 
+    // If we have genres but no tracks yet, trigger a search automatically
+    if (selectedGame && 
         selectedGenres.length > 0 && 
         spotifyTracks.length === 0 && 
         session?.user?.accessToken && 
-        !isSearching &&
-        !isAutoSearching) {
+        !isSearching) {
       // Default to searching by genres, but pass true for isAutoSearch to avoid notifications
       console.log('Auto-searching by genres on page load');
       handleSearchByGenres(selectedGenres, true);
     }
-  }, [selectedGame, selectedGenres, selectedKeywords, spotifyTracks.length, session?.user?.accessToken, handleSearchByGenres, handleSearchByKeywords, isSearching, isAutoSearching, searchParams]);
+  }, [selectedGame, selectedGenres, spotifyTracks.length, session?.user?.accessToken, handleSearchByGenres, isSearching]);
 
   const handleContinue = useCallback(async () => {
     if (!session?.user?.accessToken) {
@@ -892,28 +838,6 @@ export default function AtmospherePage() {
 
   return (
     <Box bg={bgColor} minH="100vh" py={8}>
-      {/* Progress bar for auto-search */}
-      {isAutoSearching && (
-        <Box position="fixed" top="0" left="0" right="0" zIndex="1000">
-          <Progress 
-            value={autoSearchProgress} 
-            size="sm" 
-            colorScheme="green" 
-            isAnimated
-            hasStripe
-          />
-          <Box 
-            bg={useColorModeValue('white', 'gray.800')} 
-            p={2} 
-            textAlign="center"
-            borderBottomWidth="1px"
-            borderColor={useColorModeValue('gray.200', 'gray.700')}
-          >
-            <Text fontSize="sm" fontWeight="medium">{autoSearchStage}</Text>
-          </Box>
-        </Box>
-      )}
-      
       <Container maxW="container.xl">
         <VStack spacing={8} align="stretch">
           {status === 'unauthenticated' && (
