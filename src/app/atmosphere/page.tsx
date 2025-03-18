@@ -234,15 +234,15 @@ export default function AtmospherePage() {
       const genresToSearch = [...genres];
       
       // Calculate tracks per genre based on trackCount
-      // Significantly increase the multiplier for larger track counts
-      // This is key to ensuring we get enough tracks for large playlists
-      const multiplier = trackCount > 50 ? 5 : 3;
+      // Now that we know the target playlist size, we can be more efficient
+      // and fetch just 2x the number of tracks we need
+      const multiplier = 2;
       const desiredTracksPerGenre = Math.ceil((trackCount * multiplier) / genresToSearch.length);
       
-      // Ensure we get at least 20 tracks per genre for variety
-      // BUT respect Spotify's API limit of 50 tracks per request
+      // Ensure we get enough tracks per genre, but scale with playlist size
+      // We expect to typically have 5 genres, so adjust minimum accordingly
       const SPOTIFY_MAX_LIMIT = 50;
-      const MIN_TRACKS_PER_GENRE = 20;
+      const MIN_TRACKS_PER_GENRE = Math.max(10, Math.ceil(trackCount / 5));
       
       console.log(`Aiming for ~${desiredTracksPerGenre} tracks per genre for a total target of ${trackCount} tracks`);
       
@@ -405,15 +405,15 @@ export default function AtmospherePage() {
       const keywordsToSearch = [...keywords];
       
       // Calculate tracks per keyword based on trackCount
-      // Significantly increase the multiplier for larger track counts
-      // This is key to ensuring we get enough tracks for large playlists
-      const multiplier = trackCount > 50 ? 5 : 3;
+      // Now that we know the target playlist size, we can be more efficient
+      // and fetch just 2x the number of tracks we need
+      const multiplier = 2;
       const desiredTracksPerKeyword = Math.ceil((trackCount * multiplier) / keywordsToSearch.length);
       
-      // Ensure we get at least 20 tracks per keyword for variety
-      // BUT respect Spotify's API limit of 50 tracks per request
+      // Ensure we get enough tracks per keyword, but scale with playlist size
+      // We expect to typically have 5 keywords, so adjust minimum accordingly
       const SPOTIFY_MAX_LIMIT = 50;
-      const MIN_TRACKS_PER_KEYWORD = 20;
+      const MIN_TRACKS_PER_KEYWORD = Math.max(10, Math.ceil(trackCount / 5));
       
       console.log(`Aiming for ~${desiredTracksPerKeyword} tracks per keyword for a total target of ${trackCount} tracks`);
       
