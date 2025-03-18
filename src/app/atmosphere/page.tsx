@@ -1017,12 +1017,25 @@ export default function AtmospherePage() {
                   as="span"
                   fontWeight="bold"
                   sx={{
-                    background: "linear-gradient(90deg, #00bfff 0%, #ff00ff 100%)",
+                    background: "linear-gradient(90deg, #00bfff 0%, #ff00ff 50%, #00bfff 100%)",
+                    backgroundSize: "200% 200%",
                     backgroundClip: "text",
                     textFillColor: "transparent",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
-                    display: "inline-block"
+                    display: "inline-block",
+                    animation: "gradient 15s ease-in-out infinite",
+                    "@keyframes gradient": {
+                      "0%": {
+                        backgroundPosition: "0% 50%",
+                      },
+                      "50%": {
+                        backgroundPosition: "100% 50%",
+                      },
+                      "100%": {
+                        backgroundPosition: "0% 50%",
+                      },
+                    },
                   }}
                 >
                   {selectedGame.name}
