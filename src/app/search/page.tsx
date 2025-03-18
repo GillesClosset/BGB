@@ -21,6 +21,7 @@ import {
 import SearchBar from '@/app/components/search/SearchBar';
 import SearchResults from '@/app/components/search/SearchResults';
 import GameDetails from '@/app/components/search/GameDetails';
+import TrackCount from '@/app/components/atmosphere/TrackCount';
 import { SearchResult } from '@/app/types/index';
 import { BoardGame } from '@/app/types';
 import { useAtmosphere } from '@/app/context/atmosphere-context';
@@ -35,7 +36,14 @@ export default function SearchPage() {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
-  const { setSelectedGame, setSearchResult, setAiSuggestions, updateSpotifyTracks } = useAtmosphere();
+  const { 
+    setSelectedGame, 
+    setSearchResult, 
+    setAiSuggestions, 
+    updateSpotifyTracks,
+    trackCount,
+    updateTrackCount
+  } = useAtmosphere();
   const router = useRouter();
   const toast = useToast();
   const { data: session, status } = useSession();
@@ -87,6 +95,10 @@ export default function SearchPage() {
       });
     }
   }, [toast]);
+
+  const handleTrackCountChange = useCallback((count: number) => {
+    updateTrackCount(count);
+  }, [updateTrackCount]);
 
   const generateAiSuggestions = useCallback(async (game: BoardGame) => {
     if (!game) return;
@@ -259,6 +271,17 @@ export default function SearchPage() {
                   </Button>
                 }
               />
+              
+              {loadedGameRef.current && (
+                <Box mt={6}>
+                  <TrackCount 
+                    playingTime={loadedGameRef.current?.stats?.playingTime ?? 60}
+                    value={trackCount}
+                    onChange={handleTrackCountChange}
+                  />
+                </Box>
+              )}
+              
               <Flex justify="center" mt={8}>
                 <Button 
                   colorScheme="blue" 
