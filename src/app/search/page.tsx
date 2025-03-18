@@ -208,20 +208,23 @@ export default function SearchPage() {
           <Box textAlign="center" mb={8}>
             <Heading as="h1" size="2xl" mb={4} 
               sx={{
-                background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 100%, #ff00ff 200%)",
-                backgroundSize: "200% 100%",
+                background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 50%, #ff00ff 100%)",
+                backgroundSize: "200% 200%",
                 backgroundClip: "text",
                 textFillColor: "transparent",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 display: "inline-block",
-                animation: "gradient 8s linear infinite",
+                animation: "gradient 15s ease-in-out infinite",
                 "@keyframes gradient": {
                   "0%": {
                     backgroundPosition: "0% 50%",
                   },
+                  "50%": {
+                    backgroundPosition: "100% 50%",
+                  },
                   "100%": {
-                    backgroundPosition: "200% 50%",
+                    backgroundPosition: "0% 50%",
                   },
                 },
               }}
