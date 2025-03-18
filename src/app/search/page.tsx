@@ -194,7 +194,16 @@ export default function SearchPage() {
       <Container maxW="container.xl">
         <VStack spacing={8} align="stretch">
           <Box textAlign="center" mb={8}>
-            <Heading as="h1" size="2xl" mb={4} color={textColor}>
+            <Heading as="h1" size="2xl" mb={4} 
+              sx={{
+                background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 100%)",
+                backgroundClip: "text",
+                textFillColor: "transparent",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                display: "inline-block"
+              }}
+            >
               Find Your Board Game
             </Heading>
             <Text fontSize="lg" color={useColorModeValue('gray.600', 'gray.400')}>
