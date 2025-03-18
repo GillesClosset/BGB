@@ -914,21 +914,20 @@ export default function AtmospherePage() {
             </Heading>
             <Text fontSize="lg" color={gameTextColor}>
                 Tailor your playlist for{' '}
-                <Box
+                <Text 
                   as="span"
-                  display="inline-block"
-                  bg="rgba(0, 0, 0, 0.7)"
-                  color="#0ff"
-                  px={3}
-                  py={1}
-                  borderRadius="md"
                   fontWeight="bold"
-                  fontFamily="monospace"
-                  border="1px solid #0ff"
-                  boxShadow="0 0 5px #0ff"
+                  sx={{
+                    background: "linear-gradient(90deg, #00bfff 0%, #ff00ff 100%)",
+                    backgroundClip: "text",
+                    textFillColor: "transparent",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    display: "inline-block"
+                  }}
                 >
                   {selectedGame.name}
-                </Box>
+                </Text>
             </Text>
           </Box>
           </Flex>
