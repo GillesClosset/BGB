@@ -58,7 +58,7 @@ export default function Home() {
               </Heading>
               <Text fontSize="xl">
                 Create the perfect Spotify playlist for your board game night. 
-                Match the music to your game&apos;s theme in seconds thanks to Mr Beats!
+                Match the music to your game&apos;s theme in seconds!
               </Text>
               <Button 
                 size="lg" 
@@ -119,7 +119,7 @@ export default function Home() {
                   1. Choose Your Game
                 </Heading>
                 <Text color={useColorModeValue('gray.600', 'gray.400')}>
-                  Search for your favorite board game from our extensive database.
+                  Search for your favorite board game from an extensive database.
                 </Text>
               </Box>
               
@@ -134,10 +134,10 @@ export default function Home() {
               >
                 <Icon as={FaMusic} boxSize={12} color="purple.500" mb={4} />
                 <Heading as="h3" size="md" mb={4}>
-                  2. Customize Atmosphere
+                  2. Atmosphere Tailored by AI
                 </Heading>
                 <Text color={useColorModeValue('gray.600', 'gray.400')}>
-                  Adjust musical parameters or use our AI to suggest the perfect atmosphere.
+                  Adjust your playlist length and select your preferred suggestion.
                 </Text>
               </Box>
               
@@ -155,7 +155,7 @@ export default function Home() {
                   3. Generate Playlist
                 </Heading>
                 <Text color={useColorModeValue('gray.600', 'gray.400')}>
-                  Save your custom soundtrack to Spotify and enhance your gaming experience.
+                  Enjoy your custom soundtrack with Spotify and enhance your gaming experience.
                 </Text>
               </Box>
             </SimpleGrid>
