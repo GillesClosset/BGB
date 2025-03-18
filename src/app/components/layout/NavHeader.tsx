@@ -53,7 +53,20 @@ export default function NavHeader() {
             alt="Mr Beats Icon" 
             boxSize="30px"
           />
-          <Text fontWeight="bold" fontSize="xl">BoardGame Beats</Text>
+          <Text 
+            fontWeight="bold" 
+            fontSize="xl"
+            sx={{
+              background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 100%)",
+              backgroundClip: "text",
+              textFillColor: "transparent",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              display: "inline-block"
+            }}
+          >
+            BoardGame Beats
+          </Text>
         </HStack>
 
         {/* User Menu */}

@@ -79,7 +79,19 @@ export default function Navbar() {
       <Flex h={16} alignItems="center" justifyContent="space-between">
         <HStack spacing={8} alignItems="center">
           <Link href="/" passHref>
-            <Heading as="h1" size="md" cursor="pointer">
+            <Heading 
+              as="h1" 
+              size="md" 
+              cursor="pointer"
+              sx={{
+                background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 100%)",
+                backgroundClip: "text",
+                textFillColor: "transparent",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                display: "inline-block"
+              }}
+            >
               BoardGame Beats
             </Heading>
           </Link>
