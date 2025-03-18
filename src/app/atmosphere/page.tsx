@@ -1359,9 +1359,9 @@ export default function AtmospherePage() {
             )}
           </Box>
 
-          <Divider my={4} />
+          <Divider my={1} />
 
-          <Flex justify="center" mt={4} direction="column" align="center" gap={4}>
+          <Flex justify="center" mt={0} direction="column" align="center" gap={2}>
             {status === 'authenticated' ? (
                 <Button 
                 colorScheme="green" 
