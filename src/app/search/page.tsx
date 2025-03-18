@@ -250,6 +250,14 @@ export default function SearchPage() {
 
           {selectedGameId && (
             <>
+              <Box mt={4} mb={4}>
+                <TrackCount 
+                  playingTime={loadedGameRef.current?.stats?.playingTime ?? loadedGameRef.current?.playingTime ?? 60}
+                  value={trackCount}
+                  onChange={handleTrackCountChange}
+                />
+              </Box>
+
               <Divider my={3} />
               <Flex justifyContent="flex-start" alignItems="center" gap={4} mb={2}>
                 <Heading as="h2" size="lg">
@@ -271,16 +279,6 @@ export default function SearchPage() {
                   </Button>
                 }
               />
-              
-              {loadedGameRef.current && (
-                <Box mt={6}>
-                  <TrackCount 
-                    playingTime={loadedGameRef.current?.stats?.playingTime ?? loadedGameRef.current?.playingTime ?? 60}
-                    value={trackCount}
-                    onChange={handleTrackCountChange}
-                  />
-                </Box>
-              )}
               
               <Flex justify="center" mt={8}>
                 <Button 
