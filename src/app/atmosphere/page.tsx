@@ -1024,7 +1024,7 @@ export default function AtmospherePage() {
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     display: "inline-block",
-                    animation: "gradient 15s ease-in-out infinite",
+                    animation: "gradient 8s ease-in-out infinite",
                     "@keyframes gradient": {
                       "0%": {
                         backgroundPosition: "0% 50%",
