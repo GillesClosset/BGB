@@ -208,12 +208,22 @@ export default function SearchPage() {
           <Box textAlign="center" mb={8}>
             <Heading as="h1" size="2xl" mb={4} 
               sx={{
-                background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 100%)",
+                background: "linear-gradient(90deg, #ff00ff 0%, #00bfff 100%, #ff00ff 200%)",
+                backgroundSize: "200% 100%",
                 backgroundClip: "text",
                 textFillColor: "transparent",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
-                display: "inline-block"
+                display: "inline-block",
+                animation: "gradient 8s linear infinite",
+                "@keyframes gradient": {
+                  "0%": {
+                    backgroundPosition: "0% 50%",
+                  },
+                  "100%": {
+                    backgroundPosition: "200% 50%",
+                  },
+                },
               }}
             >
               Find Your Board Game
