@@ -812,74 +812,6 @@ export default function AtmospherePage() {
     updateSpotifyTracks(randomizedTracks);
   }, [activeSearchType, selectedGenres, selectedKeywords, spotifyTracks, trackCount, updateSpotifyTracks]);
 
-  // Track Section Component with refined layout
-  function TrackSection() {
-    return (
-      <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
-        <VStack spacing={3} align="stretch">
-          <Heading size="md">Track Preview</Heading>
-          <Text fontSize="sm" color={textSecondary}>
-            Preview of your playlist based on the selected atmosphere. The final playlist will be optimized with these tracks.
-          </Text>
-          
-          <Flex justify="space-between" align="center">
-            <Text fontWeight="bold">
-              Playlist length: {trackCount} tracks
-            </Text>
-            {spotifyTracks.length > 0 && (
-              <Badge colorScheme="blue" p={1} borderRadius="md">
-                {spotifyTracks.length} tracks available
-              </Badge>
-            )}
-          </Flex>
-        </VStack>
-      </Box>
-    );
-  }
-
-  // Game Header UI component
-  function GameHeader() {
-    // selectedGame cannot be null here because we have an early return if it's null
-    const game = selectedGame!;
-    
-    return (
-      <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
-        <VStack spacing={4} align="stretch">
-          <Flex align="center" gap={4}>
-            {game.imageUrl && (
-              <Image 
-                src={game.imageUrl}
-                alt={game.name}
-                boxSize="80px"
-                objectFit="cover"
-                borderRadius="md"
-              />
-            )}
-            <VStack align="flex-start" spacing={1}>
-              <Heading size="md">{game.name}</Heading>
-              {game.yearPublished && (
-                <Text fontSize="sm" color={textSecondary}>
-                  Published: {game.yearPublished}
-                </Text>
-              )}
-            </VStack>
-          </Flex>
-          
-          <Box>
-            <Text fontWeight="bold" fontSize="sm" mb={1}>
-              Suggested Play Time:
-            </Text>
-            <Text>
-              {game.playingTime 
-                ? `${game.playingTime} minutes`
-                : 'Not specified'}
-            </Text>
-          </Box>
-        </VStack>
-      </Box>
-    );
-  }
-
   if (!selectedGame) {
     return (
       <Box bg={bgColor} minH="100vh" py={8}>
@@ -954,7 +886,7 @@ export default function AtmospherePage() {
                 Mr Beats has spoken!
             </Heading>
             <Text fontSize="lg" color={gameTextColor}>
-                Tailor your playlist for{' '}
+                Tailor your {spotifyTracks.length > 0 ? spotifyTracks.length + " track" : ""} playlist for{' '}
                 <Text 
                   as="span"
                   fontWeight="bold"
@@ -1295,17 +1227,6 @@ export default function AtmospherePage() {
               </Box>
             </GridItem>
           </Grid>
-
-          <Box 
-            p={6} 
-            bg={cardBg} 
-            borderRadius="lg" 
-            borderWidth="1px" 
-            borderColor={borderColor}
-            shadow="md"
-          >
-            <TrackSection />
-          </Box>
 
           {/* Spotify Button above Search Results */}
           {status === 'authenticated' && (
