@@ -111,6 +111,7 @@ export default function AtmospherePage() {
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const explanationTextColor = useColorModeValue('gray.600', 'gray.400');
   const gameTextColor = useColorModeValue('gray.600', 'gray.400');
+  const textSecondary = useColorModeValue('gray.600', 'gray.400');
 
   // Define the glowing animation keyframes
   const backgroundAnim = keyframes`
@@ -869,6 +870,71 @@ export default function AtmospherePage() {
     updateSpotifyTracks(randomizedTracks);
   }, [activeSearchType, selectedGenres, selectedKeywords, spotifyTracks, trackCount, updateSpotifyTracks]);
 
+  // Track Section Component with refined layout
+  function TrackSection() {
+    return (
+      <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
+        <VStack spacing={3} align="stretch">
+          <Heading size="md">Track Preview</Heading>
+          <Text fontSize="sm" color={textSecondary}>
+            Preview of your playlist based on the selected atmosphere. The final playlist will be optimized with these tracks.
+          </Text>
+          
+          <Flex justify="space-between" align="center">
+            <Text fontWeight="bold">
+              Playlist length: {trackCount} tracks
+            </Text>
+            {spotifyTracks.length > 0 && (
+              <Badge colorScheme="blue" p={1} borderRadius="md">
+                {spotifyTracks.length} tracks available
+              </Badge>
+            )}
+          </Flex>
+        </VStack>
+      </Box>
+    );
+  }
+
+  // Game Header UI component
+  function GameHeader() {
+    return (
+      <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
+        <VStack spacing={4} align="stretch">
+          <Flex align="center" gap={4}>
+            {selectedGame.imageUrl && (
+              <Image 
+                src={selectedGame.imageUrl}
+                alt={selectedGame.name}
+                boxSize="80px"
+                objectFit="cover"
+                borderRadius="md"
+              />
+            )}
+            <VStack align="flex-start" spacing={1}>
+              <Heading size="md">{selectedGame.name}</Heading>
+              {selectedGame.yearPublished && (
+                <Text fontSize="sm" color={textSecondary}>
+                  Published: {selectedGame.yearPublished}
+                </Text>
+              )}
+            </VStack>
+          </Flex>
+          
+          <Box>
+            <Text fontWeight="bold" fontSize="sm" mb={1}>
+              Suggested Play Time:
+            </Text>
+            <Text>
+              {selectedGame.playingTime 
+                ? `${selectedGame.playingTime} minutes`
+                : 'Not specified'}
+            </Text>
+          </Box>
+        </VStack>
+      </Box>
+    );
+  }
+
   if (!selectedGame) {
     return (
       <Box bg={bgColor} minH="100vh" py={8}>
@@ -1453,96 +1519,6 @@ export default function AtmospherePage() {
           </Flex>
         </VStack>
       </Container>
-    </Box>
-  );
-}
-
-// Track Section Component with refined layout
-function TrackSection() {
-  return (
-    <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
-      <VStack spacing={3} align="stretch">
-        <Heading size="md">Track Preview</Heading>
-        <Text fontSize="sm" color={textSecondary}>
-          Preview of your playlist based on the selected atmosphere. The final playlist will be optimized with these tracks.
-        </Text>
-        
-        <Flex justify="space-between" align="center">
-          <Text fontWeight="bold">
-            Playlist length: {trackCount} tracks
-          </Text>
-          {spotifyTracks.length > 0 && (
-            <Badge colorScheme="blue" p={1} borderRadius="md">
-              {spotifyTracks.length} tracks available
-            </Badge>
-          )}
-        </Flex>
-      </VStack>
-    </Box>
-  );
-}
-
-// Fix the Game Header UI to remove the Box wrapper and TrackCount reference
-function GameHeader() {
-  return (
-    <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
-      <VStack spacing={4} align="stretch">
-        <Flex align="center" gap={4}>
-          {selectedGame.imageUrl && (
-            <Image 
-              src={selectedGame.imageUrl}
-              alt={selectedGame.name}
-              boxSize="80px"
-              objectFit="cover"
-              borderRadius="md"
-            />
-          )}
-          <VStack align="flex-start" spacing={1}>
-            <Heading size="md">{selectedGame.name}</Heading>
-            {selectedGame.yearPublished && (
-              <Text fontSize="sm" color={textSecondary}>
-                Published: {selectedGame.yearPublished}
-              </Text>
-            )}
-          </VStack>
-        </Flex>
-        
-        <Box>
-          <Text fontWeight="bold" fontSize="sm" mb={1}>
-            Suggested Play Time:
-          </Text>
-          <Text>
-            {selectedGame.playingTime 
-              ? `${selectedGame.playingTime} minutes`
-              : 'Not specified'}
-          </Text>
-        </Box>
-      </VStack>
-    </Box>
-  );
-}
-
-// Track Section Component with refined layout
-function TrackSection() {
-  return (
-    <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
-      <VStack spacing={3} align="stretch">
-        <Heading size="md">Track Preview</Heading>
-        <Text fontSize="sm" color={textSecondary}>
-          Preview of your playlist based on the selected atmosphere. The final playlist will be optimized with these tracks.
-        </Text>
-        
-        <Flex justify="space-between" align="center">
-          <Text fontWeight="bold">
-            Playlist length: {trackCount} tracks
-          </Text>
-          {spotifyTracks.length > 0 && (
-            <Badge colorScheme="blue" p={1} borderRadius="md">
-              {spotifyTracks.length} tracks available
-            </Badge>
-          )}
-        </Flex>
-      </VStack>
     </Box>
   );
 } 

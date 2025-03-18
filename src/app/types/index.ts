@@ -53,6 +53,15 @@ export interface BoardGame {
   publisher: string;
   rating: number;
   weight?: number; // complexity rating
+  imageUrl?: string; // The URL for the game image
+  yearPublished?: number; // The year the game was published
+  stats?: {
+    playingTime: number;
+    minPlayers?: number;
+    maxPlayers?: number;
+    minPlayTime?: number;
+    maxPlayTime?: number;
+  };
 }
 
 // Search result type

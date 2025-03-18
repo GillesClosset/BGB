@@ -275,7 +275,7 @@ export default function SearchPage() {
               {loadedGameRef.current && (
                 <Box mt={6}>
                   <TrackCount 
-                    playingTime={loadedGameRef.current?.stats?.playingTime ?? 60}
+                    playingTime={loadedGameRef.current?.stats?.playingTime ?? loadedGameRef.current?.playingTime ?? 60}
                     value={trackCount}
                     onChange={handleTrackCountChange}
                   />
