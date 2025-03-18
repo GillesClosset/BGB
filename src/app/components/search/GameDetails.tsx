@@ -27,9 +27,10 @@ interface GameDetailsProps {
   gameId: string;
   onGameLoaded: (game: BoardGame) => void;
   titleRightContent?: React.ReactNode;
+  actionButton?: React.ReactNode;
 }
 
-const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded, titleRightContent }) => {
+const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded, titleRightContent, actionButton }) => {
   const [game, setGame] = useState<BoardGame | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +175,12 @@ const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded, titleRi
             <Text fontWeight="bold" mr={2}>Publisher:</Text>
             <Text color={descriptionColor}>{game.publisher}</Text>
           </Flex>
+          
+          {actionButton && (
+            <Flex justify="flex-start" mt={2} mb={4}>
+              {actionButton}
+            </Flex>
+          )}
           
           <Divider my={4} />
           

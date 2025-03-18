@@ -247,7 +247,7 @@ export default function SearchPage() {
               <GameDetails 
                 gameId={selectedGameId}
                 onGameLoaded={handleGameLoaded}
-                titleRightContent={
+                actionButton={
                   <Button 
                     colorScheme="blue"
                     onClick={handleContinue}
