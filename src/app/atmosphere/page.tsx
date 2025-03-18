@@ -913,7 +913,15 @@ export default function AtmospherePage() {
                 Mr Beats has spoken!
             </Heading>
             <Text fontSize="lg" color={gameTextColor}>
-                Tailor your playlist for {selectedGame.name}
+                Tailor your playlist for{' '}
+                <Text 
+                  as="span" 
+                  fontWeight="bold"
+                  textShadow="0 0 10px #00bfff, 0 0 20px #00bfff"
+                  color="white"
+                >
+                  {selectedGame.name}
+                </Text>
             </Text>
           </Box>
           </Flex>
