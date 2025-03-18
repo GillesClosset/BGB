@@ -33,6 +33,7 @@ export default function SearchPage() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const { setSelectedGame, setSearchResult, setAiSuggestions, updateSpotifyTracks } = useAtmosphere();
   const router = useRouter();
@@ -174,6 +175,8 @@ export default function SearchPage() {
       return;
     }
     
+    setIsNavigating(true);
+    
     // Generate AI suggestions before navigating
     const success = await generateAiSuggestions(game);
     
@@ -181,6 +184,8 @@ export default function SearchPage() {
     if (success || (status === 'authenticated' && session?.user?.accessToken)) {
       // Navigate to atmosphere page
       router.push('/atmosphere');
+    } else {
+      setIsNavigating(false);
     }
   }, [router, selectedGameId, generateAiSuggestions, toast, status, session?.user?.accessToken]);
 
@@ -225,9 +230,20 @@ export default function SearchPage() {
           {selectedGameId && (
             <>
               <Divider my={6} />
-              <Heading as="h2" size="lg" mb={4}>
-                Game Details
-              </Heading>
+              <Flex justifyContent="space-between" alignItems="center">
+                <Heading as="h2" size="lg" mb={4}>
+                  Game Details
+                </Heading>
+                <Button 
+                  colorScheme="blue"
+                  onClick={handleContinue}
+                  isLoading={isGeneratingAI || isNavigating}
+                  loadingText="Invoking Mr Beats!"
+                  size="md"
+                >
+                  Invoke Mr Beats!
+                </Button>
+              </Flex>
               <GameDetails 
                 gameId={selectedGameId}
                 onGameLoaded={handleGameLoaded}
@@ -238,10 +254,10 @@ export default function SearchPage() {
                   size="lg" 
                   onClick={handleContinue}
                   px={8}
-                  isLoading={isGeneratingAI}
-                  loadingText="Invoking Mr Beast!"
+                  isLoading={isGeneratingAI || isNavigating}
+                  loadingText="Invoking Mr Beats!"
                 >
-                  Invoke Mr Beast!
+                  Invoke Mr Beats!
                 </Button>
               </Flex>
             </>
