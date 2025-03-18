@@ -60,7 +60,6 @@ export default function SearchPage() {
   const handleSearch = useCallback((results: SearchResult[]) => {
     setSearchResults(results);
     setIsLoading(false);
-    setSelectedGameId(null);
   }, []);
 
   const handleSelectGame = useCallback((game: any) => {
@@ -222,20 +221,6 @@ export default function SearchPage() {
             onSelectGame={handleSelectGame}
             onSearch={handleSearch}
           />
-
-          {searchResults.length > 0 && !selectedGameId && (
-            <>
-              <Divider my={6} />
-              <Heading as="h2" size="lg" mb={4}>
-                Search Results
-              </Heading>
-              <SearchResults 
-                results={searchResults}
-                isLoading={isLoading}
-                onSelectGame={handleSelectGame}
-              />
-            </>
-          )}
 
           {selectedGameId && (
             <>
