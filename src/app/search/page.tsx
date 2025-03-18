@@ -230,23 +230,25 @@ export default function SearchPage() {
           {selectedGameId && (
             <>
               <Divider my={6} />
-              <Flex justifyContent="center" alignItems="center" gap={4} mb={4}>
+              <Flex justifyContent="flex-start" alignItems="center" gap={4} mb={4}>
                 <Heading as="h2" size="lg">
                   Game Details
                 </Heading>
-                <Button 
-                  colorScheme="blue"
-                  onClick={handleContinue}
-                  isLoading={isGeneratingAI || isNavigating}
-                  loadingText="Invoking Mr Beats!"
-                  size="md"
-                >
-                  Invoke Mr Beats!
-                </Button>
               </Flex>
               <GameDetails 
                 gameId={selectedGameId}
                 onGameLoaded={handleGameLoaded}
+                titleRightContent={
+                  <Button 
+                    colorScheme="blue"
+                    onClick={handleContinue}
+                    isLoading={isGeneratingAI || isNavigating}
+                    loadingText="Invoking Mr Beats!"
+                    size="md"
+                  >
+                    Invoke Mr Beats!
+                  </Button>
+                }
               />
               <Flex justify="center" mt={8}>
                 <Button 

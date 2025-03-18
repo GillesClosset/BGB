@@ -26,9 +26,10 @@ import { getBoardGameDetails } from '@/app/lib/boardgames';
 interface GameDetailsProps {
   gameId: string;
   onGameLoaded: (game: BoardGame) => void;
+  titleRightContent?: React.ReactNode;
 }
 
-const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded }) => {
+const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded, titleRightContent }) => {
   const [game, setGame] = useState<BoardGame | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,9 +156,16 @@ const GameDetails: React.FC<GameDetailsProps> = ({ gameId, onGameLoaded }) => {
         
         {/* Game Details */}
         <GridItem p={6}>
-          <Heading as="h2" size="xl" mb={2} color={textColor}>
-            {game.name}
-          </Heading>
+          <Flex alignItems="center" mb={2}>
+            <Heading as="h2" size="xl" color={textColor}>
+              {game.name}
+            </Heading>
+            {titleRightContent && (
+              <Box ml={4}>
+                {titleRightContent}
+              </Box>
+            )}
+          </Flex>
           
           <Flex mb={4} wrap="wrap">
             <Text fontWeight="bold" mr={2}>Designer:</Text>
