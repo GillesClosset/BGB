@@ -58,7 +58,7 @@ export default function Home() {
               </Heading>
               <Text fontSize="xl">
                 Create the perfect Spotify playlist for your board game night. 
-                Match the music to your game&apos;s theme, mood, and intensity.
+                Match the music to your game&apos;s theme in seconds thanks to Mr Beats!
               </Text>
               <Button 
                 size="lg" 
