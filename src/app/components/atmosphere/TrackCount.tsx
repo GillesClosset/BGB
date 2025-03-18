@@ -22,8 +22,12 @@ import {
   SliderThumb,
   HStack,
   Badge,
+  Grid,
+  GridItem,
+  Collapse,
+  IconButton,
 } from '@chakra-ui/react';
-import { InfoIcon, TimeIcon } from '@chakra-ui/icons';
+import { InfoIcon, TimeIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 
 interface TrackCountProps {
   playingTime: number;
@@ -39,6 +43,7 @@ const TrackCount: React.FC<TrackCountProps> = ({
   const [isAutoCalculated, setIsAutoCalculated] = useState(true);
   const [calculatedCount, setCalculatedCount] = useState(10);
   const [plannedPlayTime, setPlannedPlayTime] = useState(playingTime);
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -67,23 +72,16 @@ const TrackCount: React.FC<TrackCountProps> = ({
   const handleManualChange = (valueAsString: string, valueAsNumber: number) => {
     // Ensure value is between 1 and 100
     const boundedValue = Math.min(Math.max(valueAsNumber || 1, 1), 100);
-    console.log(`Manual track count changed to: ${boundedValue}`);
     onChange(boundedValue);
   };
 
   const handleToggleAutoCalculate = () => {
     const newIsAutoCalculated = !isAutoCalculated;
-    console.log(`Auto-calculate toggled to: ${newIsAutoCalculated}`);
     setIsAutoCalculated(newIsAutoCalculated);
     
     // If switching to auto, update with calculated value
     if (newIsAutoCalculated) {
-      console.log(`Switching to auto mode, using calculated count: ${calculatedCount}`);
       onChange(calculatedCount);
-    } else {
-      // When switching to manual mode, keep the current value as starting point
-      console.log(`Switching to manual mode, keeping current value: ${value}`);
-      // We don't need to call onChange here as the current value is already correct
     }
   };
 
@@ -102,90 +100,136 @@ const TrackCount: React.FC<TrackCountProps> = ({
   };
 
   return (
-    <Box p={4} bg={bgColor} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
-      <Heading size="md" mb={4}>Playlist Length</Heading>
+    <Box p={3} bg={bgColor} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
+      <Flex justify="space-between" align="center" mb={2}>
+        <Heading size="md" mb={0} display="flex" alignItems="center">
+          Playlist Length
+          <Badge ml={2} colorScheme="blue" fontSize="sm">
+            {isAutoCalculated 
+              ? `${calculatedCount} tracks` 
+              : `${value} tracks`}
+          </Badge>
+        </Heading>
+        <IconButton
+          icon={isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+          size="sm"
+          variant="ghost"
+          aria-label={isExpanded ? "Collapse settings" : "Expand settings"}
+          onClick={() => setIsExpanded(!isExpanded)}
+        />
+      </Flex>
       
-      <Flex direction="column" gap={4}>
-        {isAutoCalculated && (
-          <Box>
-            <FormLabel htmlFor="planned-play-time" fontWeight="medium">
-              How long do you plan to play?
-            </FormLabel>
-            <Flex direction="column" mb={4}>
-              <HStack spacing={4} mb={2}>
-                <Slider
-                  id="planned-play-time"
-                  min={30}
-                  max={360}
-                  step={15}
-                  value={plannedPlayTime}
-                  onChange={handlePlannedPlayTimeChange}
-                  colorScheme="blue"
-                  aria-label="Planned play time"
+      {/* Compact View (Always Visible) */}
+      {!isExpanded && (
+        <Grid templateColumns="1fr auto" gap={3} alignItems="center">
+          <GridItem>
+            <Flex align="center">
+              <Text fontSize="sm" mr={2}>
+                {isAutoCalculated 
+                  ? `Auto: ${formatPlayTime(plannedPlayTime)} playtime`
+                  : 'Manual: '}
+              </Text>
+              {!isAutoCalculated && (
+                <NumberInput
+                  min={1}
+                  max={100}
+                  value={value}
+                  onChange={handleManualChange}
+                  size="xs"
+                  maxW="80px"
                 >
-                  <SliderTrack>
-                    <SliderFilledTrack />
-                  </SliderTrack>
-                  <SliderThumb boxSize={6} boxShadow="md">
-                    <TimeIcon color="blue.500" />
-                  </SliderThumb>
-                </Slider>
-                <Badge colorScheme="blue" fontSize="md" px={3} py={1} borderRadius="full">
+                  <NumberInputField />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              )}
+            </Flex>
+          </GridItem>
+          <GridItem>
+            <Switch 
+              id="auto-calculate-compact" 
+              isChecked={isAutoCalculated}
+              onChange={handleToggleAutoCalculate}
+              colorScheme="blue"
+              size="sm"
+            />
+          </GridItem>
+        </Grid>
+      )}
+      
+      {/* Expanded Controls */}
+      <Collapse in={isExpanded} animateOpacity>
+        <Box pt={3}>
+          {isAutoCalculated && (
+            <Box mb={3}>
+              <Flex justify="space-between" align="center" mb={1}>
+                <Text fontSize="sm" fontWeight="medium">
+                  Play time:
+                </Text>
+                <Badge colorScheme="blue" px={2} py={0.5} borderRadius="full">
                   {formatPlayTime(plannedPlayTime)}
                 </Badge>
-              </HStack>
-              <Text fontSize="sm" color={textColor}>
+              </Flex>
+              <Slider
+                min={30}
+                max={360}
+                step={15}
+                value={plannedPlayTime}
+                onChange={handlePlannedPlayTimeChange}
+                colorScheme="blue"
+                size="sm"
+              >
+                <SliderTrack>
+                  <SliderFilledTrack />
+                </SliderTrack>
+                <SliderThumb boxSize={4} boxShadow="md">
+                  <TimeIcon fontSize="xs" color="blue.500" />
+                </SliderThumb>
+              </Slider>
+              <Text fontSize="xs" color={textColor} mt={1}>
                 {playingTime !== plannedPlayTime ? (
-                  <>Game&apos;s suggested play time: <Text as="span" fontWeight="bold">{formatPlayTime(playingTime)}</Text></>
+                  <>Game's suggested: <Text as="span" fontWeight="bold">{formatPlayTime(playingTime)}</Text></>
                 ) : (
-                  <>Using game&apos;s suggested play time</>
+                  <>Using game's suggested play time</>
                 )}
               </Text>
-            </Flex>
-          </Box>
-        )}
+            </Box>
+          )}
 
-        <FormControl display="flex" alignItems="center" justifyContent="space-between">
-          <FormLabel htmlFor="auto-calculate" mb="0" display="flex" alignItems="center">
-            Auto-calculate tracks based on play time
-            <Tooltip 
-              label="Automatically calculates the number of tracks based on your planned play time (1 track ≈ 3 minutes)" 
-              placement="top"
-              hasArrow
-            >
-              <InfoIcon ml={2} color="gray.500" />
-            </Tooltip>
-          </FormLabel>
-          <Switch 
-            id="auto-calculate" 
-            isChecked={isAutoCalculated}
-            onChange={handleToggleAutoCalculate}
-            colorScheme="blue"
-          />
-        </FormControl>
-        
-        <Box>
-          {isAutoCalculated ? (
-            <Flex direction="column">
-              <Text mb={2}>
-                Estimated tracks: <Text as="span" fontWeight="bold" color={highlightColor}>{calculatedCount}</Text>
-              </Text>
-              <Text fontSize="sm" color={textColor}>
-                Based on {formatPlayTime(plannedPlayTime)} of gameplay (avg. track length: 3 minutes)
-              </Text>
-            </Flex>
-          ) : (
-            <Flex direction="column">
-              <FormLabel htmlFor="manual-track-count" fontWeight="medium">
-                Number of tracks:
+          <FormControl display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Flex align="center">
+              <FormLabel htmlFor="auto-calculate" mb="0" fontSize="sm">
+                Auto-calculate
               </FormLabel>
+              <Tooltip 
+                label="Automatically calculates tracks based on play time (1 track ≈ 3 minutes)" 
+                placement="top"
+                hasArrow
+              >
+                <InfoIcon boxSize={3} color="gray.500" />
+              </Tooltip>
+            </Flex>
+            <Switch 
+              id="auto-calculate" 
+              isChecked={isAutoCalculated}
+              onChange={handleToggleAutoCalculate}
+              colorScheme="blue"
+              size="sm"
+            />
+          </FormControl>
+          
+          {!isAutoCalculated && (
+            <Flex align="center" justify="space-between" mb={2}>
+              <Text fontSize="sm">Number of tracks:</Text>
               <NumberInput
-                id="manual-track-count"
                 min={1}
                 max={100}
                 value={value}
                 onChange={handleManualChange}
-                size="md"
+                size="sm"
+                maxW="100px"
               >
                 <NumberInputField />
                 <NumberInputStepper>
@@ -195,8 +239,14 @@ const TrackCount: React.FC<TrackCountProps> = ({
               </NumberInput>
             </Flex>
           )}
+          
+          {isAutoCalculated && (
+            <Text fontSize="xs" color={textColor}>
+              {calculatedCount} tracks for {formatPlayTime(plannedPlayTime)} (avg. track: 3 min)
+            </Text>
+          )}
         </Box>
-      </Flex>
+      </Collapse>
     </Box>
   );
 };
