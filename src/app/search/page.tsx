@@ -229,8 +229,8 @@ export default function SearchPage() {
 
           {selectedGameId && (
             <>
-              <Divider my={6} />
-              <Flex justifyContent="flex-start" alignItems="center" gap={4} mb={4}>
+              <Divider my={3} />
+              <Flex justifyContent="flex-start" alignItems="center" gap={4} mb={2}>
                 <Heading as="h2" size="lg">
                   Game Details
                 </Heading>
