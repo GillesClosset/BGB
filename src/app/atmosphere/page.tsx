@@ -266,7 +266,7 @@ export default function AtmospherePage() {
           console.log(`Fetching ${tracksToFetch} tracks for genre "${genre}" (offset: ${offset}, page ${paginationCount + 1}/${MAX_PAGINATION_DEPTH})`);
           paginationCount++;
           
-          const response = await fetch(`/api/spotify?action=searchByGenre&genre=${encodeURIComponent(genre)}&limit=${tracksToFetch}&offset=${offset}`);
+          const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(genre)}&limit=${tracksToFetch}&offset=${offset}`);
           const data = await response.json();
           
           if (response.ok && data.tracks && data.tracks.length > 0) {
@@ -897,24 +897,27 @@ export default function AtmospherePage() {
 
   // Game Header UI component
   function GameHeader() {
+    // selectedGame cannot be null here because we have an early return if it's null
+    const game = selectedGame!;
+    
     return (
       <Box p={4} bg={cardBg} borderRadius="lg" shadow="md">
         <VStack spacing={4} align="stretch">
           <Flex align="center" gap={4}>
-            {selectedGame.imageUrl && (
+            {game.imageUrl && (
               <Image 
-                src={selectedGame.imageUrl}
-                alt={selectedGame.name}
+                src={game.imageUrl}
+                alt={game.name}
                 boxSize="80px"
                 objectFit="cover"
                 borderRadius="md"
               />
             )}
             <VStack align="flex-start" spacing={1}>
-              <Heading size="md">{selectedGame.name}</Heading>
-              {selectedGame.yearPublished && (
+              <Heading size="md">{game.name}</Heading>
+              {game.yearPublished && (
                 <Text fontSize="sm" color={textSecondary}>
-                  Published: {selectedGame.yearPublished}
+                  Published: {game.yearPublished}
                 </Text>
               )}
             </VStack>
@@ -925,8 +928,8 @@ export default function AtmospherePage() {
               Suggested Play Time:
             </Text>
             <Text>
-              {selectedGame.playingTime 
-                ? `${selectedGame.playingTime} minutes`
+              {game.playingTime 
+                ? `${game.playingTime} minutes`
                 : 'Not specified'}
             </Text>
           </Box>
