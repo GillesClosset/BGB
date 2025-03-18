@@ -233,7 +233,12 @@ export default function ProfilePage() {
               
               <VStack align="stretch" spacing={4}>
                 <Flex align="center" gap={2}>
-                  <Heading size="md">Your Game Library</Heading>
+                  <Heading size="md">Ordering of the playlist to get more tensed toward the end (like your games!)</Heading>
+                  <Badge colorScheme="purple">pro only</Badge>
+                </Flex>
+                
+                <Flex align="center" gap={2}>
+                  <Heading size="md">Your Games Library</Heading>
                   <Badge colorScheme="purple">pro only</Badge>
                 </Flex>
                 
