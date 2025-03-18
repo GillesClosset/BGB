@@ -708,68 +708,10 @@ export default function AtmospherePage() {
           // We'll show a combined notice at the end with the success message
           showTrackAdjustmentNotice = true;
         } else {
-          // We have more than enough tracks, so distribute them evenly
-          
-          // First, ensure we're working with a shuffled copy of the tracks for better variety
-          const shuffledTracks = [...spotifyTracks].sort(() => Math.random() - 0.5);
-          
-          // Create a mapping of tracks to their sources
-          const tracksBySource: Record<string, SpotifyTrack[]> = {};
-          sources.forEach(source => { tracksBySource[source] = []; });
-          
-          // Group tracks by source in round-robin fashion
-          shuffledTracks.forEach((track, index) => {
-            const source = sources[index % sources.length];
-            tracksBySource[source].push(track);
-          });
-          
-          // Log how many tracks we have per source
-          sources.forEach(source => {
-            console.log(`Source "${source}" has ${tracksBySource[source].length} tracks available`);
-          });
-          
-          // Calculate how many tracks to take from each source
-          const tracksPerSource = Math.floor(trackCount / sources.length);
-          const remainder = trackCount % sources.length;
-          
-          console.log(`Aiming for ~${tracksPerSource} tracks per source (${sources.length} sources) to reach ${trackCount} total`);
-          
-          // Take tracks from each source in an interleaved pattern
-          let tracksAdded = 0;
-          let sourceIndex = 0;
-          
-          while (tracksAdded < trackCount && tracksAdded < spotifyTracks.length) {
-            // Calculate which source to take from next (round-robin)
-            const source = sources[sourceIndex % sources.length];
-            const sourceTracks = tracksBySource[source];
-            
-            // If this source has tracks remaining, take one
-            if (sourceTracks.length > 0) {
-              const track = sourceTracks.shift(); // Take the first track
-              if (track) {
-                finalTrackUris.push(track.uri);
-                tracksAdded++;
-              }
-            }
-            
-            // Move to the next source
-            sourceIndex++;
-            
-            // If we've gone through all sources and still need more tracks,
-            // just add any remaining tracks from any source
-            if (sourceIndex >= sources.length * 2 && tracksAdded < trackCount && tracksAdded < spotifyTracks.length) {
-              // Find any source that still has tracks
-              for (const source of sources) {
-                while (tracksBySource[source].length > 0 && tracksAdded < trackCount && tracksAdded < spotifyTracks.length) {
-                  const track = tracksBySource[source].shift();
-                  if (track) {
-                    finalTrackUris.push(track.uri);
-                    tracksAdded++;
-                  }
-                }
-              }
-            }
-          }
+          // We have more than enough tracks, so use exactly what's shown in the sample
+          // Instead of reshuffling, use the exact tracks that are displayed in the UI sample
+          finalTrackUris = spotifyTracks.slice(0, trackCount).map(track => track.uri);
+          console.log(`Using the exact ${finalTrackUris.length} tracks shown in the playlist sample.`);
         }
       } else {
         // Fallback if we can't group by source
