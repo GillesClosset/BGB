@@ -72,11 +72,11 @@ const TrackCount: React.FC<TrackCountProps> = ({
         <Heading size="md" mb={0} display="flex" alignItems="center">
           How Long will you Play?
           <Badge ml={2} colorScheme="blue" fontSize="sm">
-            {calculatedCount} tracks
+            {formatPlayTime(plannedPlayTime)}
           </Badge>
         </Heading>
         <Badge colorScheme="blue" px={2} py={0.5} borderRadius="full">
-          {formatPlayTime(plannedPlayTime)}
+          {calculatedCount} tracks
         </Badge>
       </Flex>
       
