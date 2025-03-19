@@ -11,6 +11,7 @@ import {
   SliderTrack,
   SliderFilledTrack,
   SliderThumb,
+  SliderMark,
   Badge,
 } from '@chakra-ui/react';
 import { TimeIcon } from '@chakra-ui/icons';
@@ -88,15 +89,13 @@ const TrackCount: React.FC<TrackCountProps> = ({
           onChange={handlePlannedPlayTimeChange}
           colorScheme="blue"
           size="md"
-          marks={[
-            { value: 60, label: '1h' },
-            { value: 120, label: '2h' },
-            { value: 180, label: '3h' },
-            { value: 240, label: '4h' },
-            { value: 300, label: '5h' },
-            { value: 360, label: '6h' },
-          ]}
         >
+          <SliderMark value={60} mt={2} ml={-2.5} fontSize="xs">1h</SliderMark>
+          <SliderMark value={120} mt={2} ml={-2.5} fontSize="xs">2h</SliderMark>
+          <SliderMark value={180} mt={2} ml={-2.5} fontSize="xs">3h</SliderMark>
+          <SliderMark value={240} mt={2} ml={-2.5} fontSize="xs">4h</SliderMark>
+          <SliderMark value={300} mt={2} ml={-2.5} fontSize="xs">5h</SliderMark>
+          <SliderMark value={360} mt={2} ml={-2.5} fontSize="xs">6h</SliderMark>
           <SliderTrack height="4px">
             <SliderFilledTrack />
           </SliderTrack>
