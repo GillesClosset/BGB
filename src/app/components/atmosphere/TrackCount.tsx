@@ -113,7 +113,7 @@ const TrackCount: React.FC<TrackCountProps> = ({
             )}
           </Text>
           <Text>
-            {calculatedCount} tracks (avg. 3 min per track)
+            (avg. 3 min per track)
           </Text>
         </Flex>
       </Flex>
