@@ -69,7 +69,7 @@ const TrackCount: React.FC<TrackCountProps> = ({
     <Box p={3} bg={bgColor} borderRadius="lg" borderWidth="1px" borderColor={borderColor}>
       <Flex justify="space-between" align="center" mb={3}>
         <Heading size="md" mb={0} display="flex" alignItems="center">
-          Playlist Length
+          How Long will you Play?
           <Badge ml={2} colorScheme="blue" fontSize="sm">
             {calculatedCount} tracks
           </Badge>
@@ -87,9 +87,9 @@ const TrackCount: React.FC<TrackCountProps> = ({
           value={plannedPlayTime}
           onChange={handlePlannedPlayTimeChange}
           colorScheme="blue"
-          size="sm"
+          size="md"
         >
-          <SliderTrack>
+          <SliderTrack height="4px">
             <SliderFilledTrack />
           </SliderTrack>
           <SliderThumb boxSize={4} boxShadow="md">
