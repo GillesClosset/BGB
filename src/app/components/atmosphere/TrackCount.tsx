@@ -104,7 +104,7 @@ const TrackCount: React.FC<TrackCountProps> = ({
           </SliderThumb>
         </Slider>
         
-        <Flex justify="space-between" fontSize="xs" color={textColor}>
+        <Flex justify="space-between" fontSize="sm" color={textColor} mt={6}>
           <Text>
             {playingTime !== plannedPlayTime ? (
               <>Game's suggested: <Text as="span" fontWeight="bold">{formatPlayTime(playingTime)}</Text></>
