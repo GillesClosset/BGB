@@ -88,6 +88,14 @@ const TrackCount: React.FC<TrackCountProps> = ({
           onChange={handlePlannedPlayTimeChange}
           colorScheme="blue"
           size="md"
+          marks={[
+            { value: 60, label: '1h' },
+            { value: 120, label: '2h' },
+            { value: 180, label: '3h' },
+            { value: 240, label: '4h' },
+            { value: 300, label: '5h' },
+            { value: 360, label: '6h' },
+          ]}
         >
           <SliderTrack height="4px">
             <SliderFilledTrack />
