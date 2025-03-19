@@ -133,6 +133,12 @@ export default function ProfilePage() {
                 size="sm"
                 onClick={() => router.push('/search')}
                 mt={4}
+                borderRadius="full"
+                bgColor="#1DB954"
+                _hover={{ bgColor: "#1ED760" }}
+                _active={{ bgColor: "#1AA64B" }}
+                fontWeight="bold"
+                boxShadow="md"
               >
                 Create New Playlist
               </Button>
@@ -194,6 +200,8 @@ export default function ProfilePage() {
                   isLoading={isSubmitting}
                   loadingText="Submitting"
                   onClick={handleSubmitFeedback}
+                  bg="blue.600"
+                  _hover={{ bg: "blue.700" }}
                 >
                   Submit Feedback
                 </Button>
@@ -221,7 +229,9 @@ export default function ProfilePage() {
               <Flex direction={{ base: 'column', md: 'row' }} align="center" gap={4}>
                 <Button 
                   isDisabled={true}
-                  colorScheme="gray"
+                  colorScheme="blue"
+                  bg="blue.600"
+                  _hover={{ bg: "blue.700" }}
                   size="lg"
                 >
                   Switch to Pro
@@ -234,27 +244,27 @@ export default function ProfilePage() {
               <VStack align="stretch" spacing={4}>
                 <Flex align="center" gap={2}>
                   <Heading size="md">Ordering of the playlist to get more tensed toward the end (like your games!)</Heading>
-                  <Badge colorScheme="purple">pro only</Badge>
+                  <Badge colorScheme="blue">pro only</Badge>
                 </Flex>
                 
                 <Flex align="center" gap={2}>
                   <Heading size="md">Your Games Library</Heading>
-                  <Badge colorScheme="purple">pro only</Badge>
+                  <Badge colorScheme="blue">pro only</Badge>
                 </Flex>
                 
                 <Flex align="center" gap={2}>
                   <Heading size="md">Excluded Music Genres</Heading>
-                  <Badge colorScheme="purple">pro only</Badge>
+                  <Badge colorScheme="blue">pro only</Badge>
                 </Flex>
                 
                 <Flex align="center" gap={2}>
                   <Heading size="md">Saved Playlists</Heading>
-                  <Badge colorScheme="purple">pro only</Badge>
+                  <Badge colorScheme="blue">pro only</Badge>
                 </Flex>
                 
                 <Flex align="center" gap={2}>
-                  <Heading size="md">Editable Playlists</Heading>
-                  <Badge colorScheme="purple">pro only</Badge>
+                  <Heading size="md">Editable Playlists and Full Preview</Heading>
+                  <Badge colorScheme="blue">pro only</Badge>
                 </Flex>
               </VStack>
             </VStack>

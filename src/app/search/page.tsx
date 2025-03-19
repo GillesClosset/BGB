@@ -287,6 +287,16 @@ export default function SearchPage() {
                     isLoading={isGeneratingAI || isNavigating}
                     loadingText="Invoking Mr Beats!"
                     size="md"
+                    bgGradient="linear(to-r, #ff00cc, #3333ff)"
+                    _hover={{
+                      bgGradient: "linear(to-r, #ff00cc, #3333ff)",
+                      opacity: 0.9
+                    }}
+                    _active={{
+                      bgGradient: "linear(to-r, #ff00cc, #3333ff)", 
+                      opacity: 0.8
+                    }}
+                    color="white"
                   >
                     Invoke Mr Beats!
                   </Button>
@@ -301,6 +311,16 @@ export default function SearchPage() {
                   px={8}
                   isLoading={isGeneratingAI || isNavigating}
                   loadingText="Invoking Mr Beats!"
+                  bgGradient="linear(to-r, #ff00cc, #3333ff)"
+                  _hover={{
+                    bgGradient: "linear(to-r, #ff00cc, #3333ff)",
+                    opacity: 0.9
+                  }}
+                  _active={{
+                    bgGradient: "linear(to-r, #ff00cc, #3333ff)", 
+                    opacity: 0.8
+                  }}
+                  color="white"
                 >
                   Invoke Mr Beats!
                 </Button>
