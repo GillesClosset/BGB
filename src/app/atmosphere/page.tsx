@@ -771,6 +771,9 @@ export default function AtmospherePage() {
       });
       }
       
+      // Add a delay before returning the URL to ensure Spotify has processed the playlist
+      await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay
+      
       return spotifyUrl;
 
     } catch (error) {
@@ -1254,7 +1257,9 @@ export default function AtmospherePage() {
                 px={10}
                 py={6}
                 isLoading={isCreatingPlaylist}
-                loadingText={spotifyTracks.length < trackCount && !isSearching ? "Refreshing tracks..." : "Creating Playlist"}
+                loadingText={spotifyTracks.length < trackCount && !isSearching ? 
+                  "Refreshing tracks..." : 
+                  "Creating playlist & preparing Spotify..."}
                 isDisabled={spotifyTracks.length === 0}
                 leftIcon={<Icon as={FaSpotify} boxSize={5} />}
                 borderRadius="full"
@@ -1357,7 +1362,9 @@ export default function AtmospherePage() {
                 px={10}
                 py={6}
                   isLoading={isCreatingPlaylist}
-                loadingText={spotifyTracks.length < trackCount && !isSearching ? "Refreshing tracks..." : "Creating Playlist"}
+                loadingText={spotifyTracks.length < trackCount && !isSearching ? 
+                  "Refreshing tracks..." : 
+                  "Creating playlist & preparing Spotify..."}
                   isDisabled={spotifyTracks.length === 0}
                 leftIcon={<Icon as={FaSpotify} boxSize={5} />}
                 borderRadius="full"
