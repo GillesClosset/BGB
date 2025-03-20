@@ -95,12 +95,18 @@ export function AtmosphereProvider({ children }: { children: ReactNode }) {
 
   // Custom setter for selectedGame that also resets atmosphere state
   const setGameWithReset = useCallback((game: BoardGame | null) => {
-    // If the game is different from the current one, reset atmosphere data
-    if (game?.id !== selectedGame?.id) {
-      resetAtmosphere();
-    }
-    setSelectedGame(game);
-  }, [selectedGame, resetAtmosphere]);
+    // We need to use a functional update to avoid a dependency on selectedGame
+    setSelectedGame((prevGame) => {
+      // If the game is different from the current one, reset atmosphere data
+      if (game?.id !== prevGame?.id) {
+        // Only reset if we're changing to a different game (not on initial set)
+        if (prevGame !== null) {
+          resetAtmosphere();
+        }
+      }
+      return game;
+    });
+  }, [resetAtmosphere]);
   
   // Update selected genres
   const updateSelectedGenres = useCallback((genres: string[]) => {
