@@ -80,6 +80,28 @@ export function AtmosphereProvider({ children }: { children: ReactNode }) {
   // Mood
   const [mood, setMood] = useState<string>('neutral');
 
+  // Reset everything
+  const resetAtmosphere = useCallback(() => {
+    setSelectedGenres([]);
+    setSelectedKeywords([]);
+    setTrackCount(10);
+    setAiSuggestedGenres([]);
+    setAiKeywords([]);
+    setAiExplanation(null);
+    setSpotifyTracks([]);
+    setMood('neutral');
+    setActiveSearchType('genres');
+  }, []);
+
+  // Custom setter for selectedGame that also resets atmosphere state
+  const setGameWithReset = useCallback((game: BoardGame | null) => {
+    // If the game is different from the current one, reset atmosphere data
+    if (game?.id !== selectedGame?.id) {
+      resetAtmosphere();
+    }
+    setSelectedGame(game);
+  }, [selectedGame, resetAtmosphere]);
+  
   // Update selected genres
   const updateSelectedGenres = useCallback((genres: string[]) => {
     setSelectedGenres(genres);
@@ -148,25 +170,12 @@ export function AtmosphereProvider({ children }: { children: ReactNode }) {
     setSpotifyTracks([]);
   }, []);
 
-  // Reset everything
-  const resetAtmosphere = useCallback(() => {
-    setSelectedGenres([]);
-    setSelectedKeywords([]);
-    setTrackCount(10);
-    setAiSuggestedGenres([]);
-    setAiKeywords([]);
-    setAiExplanation(null);
-    setSpotifyTracks([]);
-    setMood('neutral');
-    setActiveSearchType('genres');
-  }, []);
-
   return (
     <AtmosphereContext.Provider
       value={{
         selectedGame,
         searchResult,
-        setSelectedGame,
+        setSelectedGame: setGameWithReset,
         setSearchResult,
         selectedGenres,
         updateSelectedGenres,
