@@ -73,20 +73,22 @@ export interface BoardGame {
   };
 }
 
-// Search result type
+// Search result type (simplified version used in SearchBar)
 export interface SearchResult {
   id: string;
   name: string;
-  description: string;
-  image_url: string;
-  min_players: number;
-  max_players: number;
-  min_playtime: number;
-  max_playtime: number;
-  year_published: number;
-  games: any[];
-  totalResults: number;
-  page: number;
+  yearPublished: number;
+  image: string;
+  description?: string;
+  image_url?: string;
+  min_players?: number;
+  max_players?: number;
+  min_playtime?: number;
+  max_playtime?: number;
+  year_published?: number;
+  games?: any[];
+  totalResults?: number;
+  page?: number;
 }
 
 // Atmosphere related types
