@@ -28,30 +28,31 @@ const TrackCount: React.FC<TrackCountProps> = ({
   onChange,
 }) => {
   const [calculatedCount, setCalculatedCount] = useState(10);
-  const [plannedPlayTime, setPlannedPlayTime] = useState(playingTime);
+  // Initialize plannedPlayTime with a rounded-up value
+  const initializeRoundedTime = (time: number) => {
+    // Round to next quarter hour (15 minutes)
+    const remainder = time % 15;
+    return remainder > 0 ? time + (15 - remainder) : time;
+  };
+  const [plannedPlayTime, setPlannedPlayTime] = useState(() => initializeRoundedTime(playingTime));
   
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
   const textColor = useColorModeValue('gray.600', 'gray.400');
 
+  // When playingTime changes (e.g. when a new game is selected), 
+  // update plannedPlayTime with rounded value
+  useEffect(() => {
+    if (!playingTime) return;
+    setPlannedPlayTime(initializeRoundedTime(playingTime));
+  }, [playingTime]);
+
   // Calculate track count based on playing time
   useEffect(() => {
     if (!playingTime) return;
     
-    // Default to the game's playing time if planned play time is not set
-    let timeToUse = plannedPlayTime || playingTime;
-    
-    // If this is the initial setting (plannedPlayTime equals playingTime),
-    // round the play time to the next quarter hour (15 minutes)
-    if (plannedPlayTime === playingTime) {
-      const remainder = timeToUse % 15;
-      if (remainder > 0) {
-        // Round up to the next 15-minute increment
-        timeToUse = timeToUse + (15 - remainder);
-        // Update the planned play time with the rounded value
-        setPlannedPlayTime(timeToUse);
-      }
-    }
+    // Use the planned play time for track calculations
+    const timeToUse = plannedPlayTime;
     
     // Formula: 1 track per 3 minutes of gameplay
     const avgTrackDuration = 3; // minutes
