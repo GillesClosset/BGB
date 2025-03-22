@@ -39,7 +39,8 @@ import {
 import SearchBar from '@/app/components/search/SearchBar';
 import GameDetails from '@/app/components/search/GameDetails';
 import TrackCount from '@/app/components/atmosphere/TrackCount';
-import { SearchResult, BoardGame, SpotifyTrack } from '@/app/types';
+import { BoardGame, SpotifyTrack } from '@/app/types';
+import { SearchResult } from '@/app/types/index';
 import { useAtmosphere } from '@/app/context/atmosphere-context';
 import { useSession, signIn } from 'next-auth/react';
 import { FaSpotify } from 'react-icons/fa';
