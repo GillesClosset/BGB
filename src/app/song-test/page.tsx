@@ -46,15 +46,18 @@ import { useSession, signIn } from 'next-auth/react';
 import { FaSpotify } from 'react-icons/fa';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// Initialize Supabase client only on the client side
+let supabase: any = null;
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
+// Only initialize in the browser, not during build
+if (typeof window !== 'undefined') {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  }
 }
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Add new types for statistics
 interface TrackStatistics {
