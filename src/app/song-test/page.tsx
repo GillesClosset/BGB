@@ -168,7 +168,14 @@ export default function SongTestPage() {
       console.log(`Found ${data.length} results for "${searchQuery}"`);
 
       // Transform the data to match our SpotifyTrack interface
-      const tracks = data.map(track => ({
+      const tracks = data.map((track: { 
+        id?: string; 
+        name?: string; 
+        artists?: string; 
+        album_name?: string;
+        danceability?: number;
+        energy?: number;
+      }) => ({
         id: track.id || '',
         name: track.name || '',
         artists: [{ 
