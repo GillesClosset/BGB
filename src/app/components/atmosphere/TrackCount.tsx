@@ -39,7 +39,19 @@ const TrackCount: React.FC<TrackCountProps> = ({
     if (!playingTime) return;
     
     // Default to the game's playing time if planned play time is not set
-    const timeToUse = plannedPlayTime || playingTime;
+    let timeToUse = plannedPlayTime || playingTime;
+    
+    // If this is the initial setting (plannedPlayTime equals playingTime),
+    // round the play time to the next quarter hour (15 minutes)
+    if (plannedPlayTime === playingTime) {
+      const remainder = timeToUse % 15;
+      if (remainder > 0) {
+        // Round up to the next 15-minute increment
+        timeToUse = timeToUse + (15 - remainder);
+        // Update the planned play time with the rounded value
+        setPlannedPlayTime(timeToUse);
+      }
+    }
     
     // Formula: 1 track per 3 minutes of gameplay
     const avgTrackDuration = 3; // minutes
