@@ -564,16 +564,21 @@ export default function AtmospherePage() {
 
   // Auto-search when arriving at the page with AI suggestions but no tracks
   useEffect(() => {
-    // If we have genres but no tracks yet, trigger a search automatically
+    // Disabled auto-search on page load per requirements
+    // Previously, this would trigger a search by genres automatically
+    console.log('Auto-search on page load is disabled');
+    
+    // If we want to enable this in the future, uncomment:
+    /*
     if (selectedGame && 
         selectedGenres.length > 0 && 
         spotifyTracks.length === 0 && 
         session?.user?.accessToken && 
         !isSearching) {
-      // Default to searching by genres, but pass true for isAutoSearch to avoid notifications
       console.log('Auto-searching by genres on page load');
       handleSearchByGenres(selectedGenres, true);
     }
+    */
   }, [selectedGame, selectedGenres, spotifyTracks.length, session?.user?.accessToken, handleSearchByGenres, isSearching]);
 
   const handleContinue = useCallback(async () => {
@@ -1063,7 +1068,7 @@ export default function AtmospherePage() {
                   isLoading={isSearching && activeSearchType === 'genres'}
                   loadingText="Searching..."
                 >
-                    Mr Beats Atmosphere
+                    Get Tracks based on Music Genres
                 </Button>
                   <Text 
                     fontSize="xs" 
@@ -1074,6 +1079,16 @@ export default function AtmospherePage() {
                   >
                     {activeSearchType === 'genres' && 'Selected'}
                 </Text>
+                
+                {/* Display suggested genres */}
+                <Box mt={4}>
+                  <GenreSelector
+                    selectedGenres={selectedGenres}
+                    onChange={updateSelectedGenres}
+                    aiSuggestedGenres={aiSuggestedGenres}
+                    maxGenres={5}
+                  />
+                </Box>
                 </Box>
               </Box>
             </GridItem>
@@ -1215,7 +1230,7 @@ export default function AtmospherePage() {
                   isLoading={isSearching && activeSearchType === 'keywords'}
                   loadingText="Searching..."
                 >
-                    Alternate Selection
+                    Get Tracks based on Keywords
                 </Button>
                   <Text 
                     fontSize="xs" 
@@ -1226,6 +1241,16 @@ export default function AtmospherePage() {
                   >
                     {activeSearchType === 'keywords' && 'Selected'}
                 </Text>
+                
+                {/* Display removable keywords */}
+                <Box mt={4}>
+                  <KeywordSelector
+                    selectedKeywords={selectedKeywords}
+                    onChange={updateSelectedKeywords}
+                    aiSuggestedKeywords={aiKeywords}
+                    maxKeywords={5}
+                  />
+                </Box>
                 </Box>
               </Box>
             </GridItem>
@@ -1233,7 +1258,7 @@ export default function AtmospherePage() {
 
           {/* Spotify Button above Search Results */}
           {status === 'authenticated' && (
-            <Flex justify="center" my={4}>
+            <Flex justify="center" my={4} gap={4}>
               <Button 
                 colorScheme="green" 
                 size="lg" 
@@ -1271,6 +1296,36 @@ export default function AtmospherePage() {
                 boxShadow="md"
               >
                 {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
+              </Button>
+              
+              {/* Restore Suggestions Button */}
+              <Button
+                size="lg"
+                onClick={() => {
+                  if (aiSuggestedGenres.length > 0) {
+                    updateSelectedGenres(aiSuggestedGenres);
+                  }
+                  if (aiKeywords.length > 0) {
+                    updateSelectedKeywords(aiKeywords);
+                  }
+                  toast({
+                    title: 'Suggestions Restored',
+                    description: 'AI-suggested genres and keywords have been restored',
+                    status: 'info',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }}
+                px={10}
+                py={6}
+                isDisabled={aiSuggestedGenres.length === 0 && aiKeywords.length === 0}
+                borderRadius="full"
+                colorScheme="purple"
+                fontWeight="bold"
+                fontSize="md"
+                boxShadow="md"
+              >
+                Restore Suggestions
               </Button>
             </Flex>
           )}
@@ -1330,7 +1385,7 @@ export default function AtmospherePage() {
             ) : (
               <Text textAlign="center" color="gray.500" py={10}>
                 Music suggestions have been generated based on {selectedGame.name}. 
-                Click &quot;Mr Beats Atmosphere&quot; or &quot;Alternate Selection&quot; to find matching tracks.
+                Click &quot;Get Tracks based on Music Genres&quot; or &quot;Get Tracks based on Keywords&quot; to find matching tracks.
               </Text>
             )}
           </Box>
@@ -1339,6 +1394,7 @@ export default function AtmospherePage() {
 
           <Flex justify="center" mt={0} direction="column" align="center" gap={2}>
             {status === 'authenticated' ? (
+              <Flex gap={4} direction={{ base: "column", md: "row" }}>
                 <Button 
                 colorScheme="green" 
                   size="lg" 
@@ -1377,6 +1433,37 @@ export default function AtmospherePage() {
               >
                 {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
                 </Button>
+                
+                {/* Restore Suggestions Button */}
+                <Button
+                  size="lg"
+                  onClick={() => {
+                    if (aiSuggestedGenres.length > 0) {
+                      updateSelectedGenres(aiSuggestedGenres);
+                    }
+                    if (aiKeywords.length > 0) {
+                      updateSelectedKeywords(aiKeywords);
+                    }
+                    toast({
+                      title: 'Suggestions Restored',
+                      description: 'AI-suggested genres and keywords have been restored',
+                      status: 'info',
+                      duration: 3000,
+                      isClosable: true,
+                    });
+                  }}
+                  px={10}
+                  py={6}
+                  isDisabled={aiSuggestedGenres.length === 0 && aiKeywords.length === 0}
+                  borderRadius="full"
+                  colorScheme="purple"
+                  fontWeight="bold"
+                  fontSize="md"
+                  boxShadow="md"
+                >
+                  Restore Suggestions
+                </Button>
+              </Flex>
             ) : (
               <Button 
                 colorScheme="green" 

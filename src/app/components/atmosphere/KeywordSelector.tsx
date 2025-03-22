@@ -83,7 +83,7 @@ const KeywordSelector: React.FC<KeywordSelectorProps> = ({
 
   return (
     <Box>
-      <Heading size="md" mb={3}>Playlist by Keywords</Heading>
+      <Heading size="md" mb={3}>Keywords</Heading>
       
       {/* Selected Keywords */}
       <Flex wrap="wrap" gap={2} mb={4}>

@@ -163,6 +163,29 @@ export async function GET(req: NextRequest) {
         }
       }
       
+      case 'getTracks': {
+        const ids = url.searchParams.get('ids');
+        
+        if (!ids) {
+          return NextResponse.json(
+            { error: 'Track IDs are required' },
+            { status: 400 }
+          );
+        }
+        
+        try {
+          console.log(`[Spotify API] Getting tracks with IDs: ${ids}`);
+          const data = await spotifyClient.getTracks(ids.split(','));
+          return NextResponse.json({ tracks: data.body.tracks || [] });
+        } catch (error: any) {
+          logError(`Failed to get tracks with IDs: ${ids}`, error);
+          return NextResponse.json(
+            { error: `Failed to get tracks: ${error.message}` },
+            { status: error.statusCode || 500 }
+          );
+        }
+      }
+      
       case 'playlist': {
         const playlistId = url.searchParams.get('id');
         

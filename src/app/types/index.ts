@@ -10,14 +10,23 @@ export interface SpotifyUser {
 export interface SpotifyTrack {
   id: string;
   name: string;
-  artists: { id: string; name: string }[];
+  artists: string;
   album: {
     id: string;
     name: string;
-    images: { url: string; height: number; width: number }[];
+    images: Array<{
+      url: string;
+      height: number;
+      width: number;
+    }>;
   };
   duration_ms: number;
   uri: string;
+  preview_url: string | null;
+  external_urls: {
+    spotify: string;
+  };
+  popularity: number;
 }
 
 export interface SpotifyPlaylist {
@@ -68,8 +77,16 @@ export interface BoardGame {
 export interface SearchResult {
   id: string;
   name: string;
-  yearPublished: number;
-  image: string;
+  description: string;
+  image_url: string;
+  min_players: number;
+  max_players: number;
+  min_playtime: number;
+  max_playtime: number;
+  year_published: number;
+  games: any[];
+  totalResults: number;
+  page: number;
 }
 
 // Atmosphere related types
