@@ -445,7 +445,7 @@ export default function ReccoTestPage() {
           
           // Add valid track IDs to our set
           if (verifyData.tracks) {
-            verifyData.tracks.forEach(track => {
+            verifyData.tracks.forEach((track: { id?: string }) => {
               if (track && track.id) {
                 validTrackIds.add(track.id);
               }
