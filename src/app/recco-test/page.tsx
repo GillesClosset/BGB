@@ -376,7 +376,7 @@ export default function ReccoTestPage() {
       // Create a map for quick lookups
       const featuresMap = new Map();
       if (data) {
-        data.forEach(item => {
+        data.forEach((item: { id: string; energy: number; tempo: number }) => {
           featuresMap.set(item.id, {
             energy: item.energy,
             tempo: item.tempo
