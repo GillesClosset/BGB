@@ -104,17 +104,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Get the service key from environment or custom header for internal API calls
+    let serviceKey = supabaseServiceKey;
+    const headerAuthKey = request.headers.get('x-supabase-auth');
+    
+    if (headerAuthKey) {
+      console.log('[Vector Search] Using auth key from request header');
+      serviceKey = headerAuthKey;
+    }
+    
     // Validate environment configuration
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error('[Vector Search] Missing Supabase credentials in environment variables');
+    if (!supabaseUrl || !serviceKey) {
+      console.error('[Vector Search] Missing Supabase credentials in environment variables or headers');
       return NextResponse.json(
         { error: 'Server configuration error: Missing database credentials' },
         { status: 500 }
       );
     }
 
-    // Create Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create Supabase client with the appropriate key
+    const supabase = createClient(supabaseUrl, serviceKey);
     console.log('[Vector Search] Supabase client created successfully');
 
     // Get embeddings for the query text

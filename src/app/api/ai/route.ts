@@ -152,7 +152,7 @@ async function getRelevantGenres(boardGame: BoardGame): Promise<string[]> {
     // Use request to our own API on the same server
     // Note: Using absolute URL with request origin
     const requestUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}/api/vector-search` 
+      ? `/api/vector-search` // Use relative URL instead of absolute to avoid auth issues
       : 'http://localhost:3000/api/vector-search';
     
     console.log(`Calling vector search API at: ${requestUrl}`);
@@ -165,8 +165,12 @@ async function getRelevantGenres(boardGame: BoardGame): Promise<string[]> {
     }, {
       headers: {
         'Content-Type': 'application/json',
+        // Include the Supabase service key for authentication when on Vercel
+        ...(process.env.VERCEL_URL && {'x-supabase-auth': process.env.SUPABASE_SERVICE_ROLE_KEY})
       },
-      timeout: 5000 // 5 second timeout to prevent hanging
+      timeout: 5000, // 5 second timeout to prevent hanging
+      // Use baseURL when on Vercel to ensure proper routing
+      ...(process.env.VERCEL_URL && {baseURL: `https://${process.env.VERCEL_URL}`})
     });
     
     // Extract genre names and return them
