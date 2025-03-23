@@ -137,7 +137,8 @@ export default function SearchPage() {
       console.log('AI suggested keywords:', aiResponse.keywords || []);
       
       // Store retrieved genres from vector search if available
-      const retrievedGenres = aiResponse.retrievedGenres || [];
+      // Use type assertion to prevent TypeScript error
+      const retrievedGenres = (aiResponse as any).retrievedGenres || [];
       setRetrievedGenres(retrievedGenres);
       console.log('Stored retrieved genres:', retrievedGenres.length);
       
