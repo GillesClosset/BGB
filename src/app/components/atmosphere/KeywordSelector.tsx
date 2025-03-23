@@ -10,9 +10,8 @@ import {
   TagLabel,
   TagCloseButton,
   Flex,
-  List,
-  ListItem,
   Text,
+  IconButton,
   useColorModeValue,
   Heading,
   Badge,
@@ -33,12 +32,10 @@ const KeywordSelector: React.FC<KeywordSelectorProps> = ({
   maxKeywords = 5,
 }) => {
   const [input, setInput] = useState<string>('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const inputBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
   const tagBg = useColorModeValue('gray.100', 'gray.700');
   const aiTagBg = useColorModeValue('purple.100', 'purple.800');
   const tagTextColor = useColorModeValue('gray.800', 'white');
@@ -47,11 +44,15 @@ const KeywordSelector: React.FC<KeywordSelectorProps> = ({
     setInput(e.target.value);
   };
 
-  const handleAddKeyword = (keyword: string) => {
+  const handleAddKeyword = () => {
+    // Only add if input is not empty
+    if (!input.trim()) return;
+
     if (selectedKeywords.length >= maxKeywords) {
       return; // Don't add more than maxKeywords
     }
     
+    const keyword = input.trim();
     if (!selectedKeywords.includes(keyword)) {
       const newKeywords = [...selectedKeywords, keyword];
       onChange(newKeywords);
@@ -67,9 +68,9 @@ const KeywordSelector: React.FC<KeywordSelectorProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && input.trim() !== '') {
+    if (e.key === 'Enter') {
       e.preventDefault();
-      handleAddKeyword(input.trim());
+      handleAddKeyword();
     } else if (e.key === 'Backspace' && input === '' && selectedKeywords.length > 0) {
       // Remove the last keyword when backspace is pressed on empty input
       handleRemoveKeyword(selectedKeywords[selectedKeywords.length - 1]);
@@ -120,7 +121,15 @@ const KeywordSelector: React.FC<KeywordSelectorProps> = ({
               borderColor={borderColor}
             />
             <InputRightElement>
-              <AddIcon color="gray.500" />
+              <IconButton
+                aria-label="Add keyword"
+                icon={<AddIcon />}
+                size="sm"
+                variant="ghost"
+                colorScheme="blue"
+                onClick={handleAddKeyword}
+                isDisabled={!input.trim()}
+              />
             </InputRightElement>
           </InputGroup>
         </Box>

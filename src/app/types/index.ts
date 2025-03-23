@@ -109,7 +109,10 @@ export interface AIPrompt {
 
 export interface AIResponse {
   genres: string[];
-  audioFeatures: {
+  keywords?: string[];
+  retrievedGenres?: string[];
+  explanation?: string;
+  audioFeatures?: {
     acousticness: number;
     danceability: number;
     energy: number;

@@ -14,6 +14,10 @@ interface AtmosphereContextType {
   selectedGenres: string[];
   updateSelectedGenres: (genres: string[]) => void;
   
+  // Retrieved genres from vector search
+  retrievedGenres: string[];
+  setRetrievedGenres: (genres: string[]) => void;
+  
   // Keywords
   aiKeywords: string[];
   selectedKeywords: string[];
@@ -58,6 +62,9 @@ export function AtmosphereProvider({ children }: { children: ReactNode }) {
   // Genres
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   
+  // Retrieved genres from vector search
+  const [retrievedGenres, setRetrievedGenres] = useState<string[]>([]);
+  
   // Keywords
   const [aiKeywords, setAiKeywords] = useState<string[]>([]);
   const [selectedKeywords, setSelectedKeywords] = useState<string[]>([]);
@@ -83,6 +90,7 @@ export function AtmosphereProvider({ children }: { children: ReactNode }) {
   // Reset everything
   const resetAtmosphere = useCallback(() => {
     setSelectedGenres([]);
+    setRetrievedGenres([]);
     setSelectedKeywords([]);
     setTrackCount(10);
     setAiSuggestedGenres([]);
@@ -185,6 +193,8 @@ export function AtmosphereProvider({ children }: { children: ReactNode }) {
         setSearchResult,
         selectedGenres,
         updateSelectedGenres,
+        retrievedGenres,
+        setRetrievedGenres,
         aiKeywords,
         selectedKeywords,
         updateSelectedKeywords,

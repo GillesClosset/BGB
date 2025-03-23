@@ -3,15 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
-  Input,
-  InputGroup,
-  InputRightElement,
+  Select,
   Tag,
   TagLabel,
   TagCloseButton,
   Flex,
-  List,
-  ListItem,
   Text,
   Spinner,
   useColorModeValue,
@@ -19,8 +15,8 @@ import {
   Badge,
   useToast,
 } from '@chakra-ui/react';
-import { AddIcon } from '@chakra-ui/icons';
 import { getAvailableGenres } from '@/app/lib/spotify';
+import { useAtmosphere } from '@/app/context/atmosphere-context';
 
 interface GenreSelectorProps {
   selectedGenres: string[];
@@ -35,39 +31,41 @@ const GenreSelector: React.FC<GenreSelectorProps> = ({
   aiSuggestedGenres = [],
   maxGenres = 5,
 }) => {
+  const { retrievedGenres } = useAtmosphere();
   const [availableGenres, setAvailableGenres] = useState<string[]>([]);
-  const [filteredGenres, setFilteredGenres] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [selectedGenre, setSelectedGenre] = useState('');
 
   const toast = useToast();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.600');
-  const hoverBgColor = useColorModeValue('gray.50', 'gray.700');
   const tagBg = useColorModeValue('gray.100', 'gray.700');
   const aiTagBg = useColorModeValue('purple.100', 'purple.800');
   const tagTextColor = useColorModeValue('gray.800', 'white');
 
-  // Load available genres on component mount
+  // Load available genres on component mount or when retrievedGenres changes
   useEffect(() => {
-    const fetchGenres = async () => {
+    const loadGenres = async () => {
       setIsLoading(true);
       try {
-        // Try to get genres from localStorage first
-        const cachedGenres = localStorage.getItem('spotifyAvailableGenres');
-        
-        if (cachedGenres) {
-          setAvailableGenres(JSON.parse(cachedGenres));
+        // Prioritize retrievedGenres from vector search if available
+        if (retrievedGenres && retrievedGenres.length > 0) {
+          console.log('Using retrieved genres from vector search:', retrievedGenres.length);
+          setAvailableGenres(retrievedGenres);
         } else {
-          const genres = await getAvailableGenres();
-          setAvailableGenres(genres);
-          // Cache the genres in localStorage
-          localStorage.setItem('spotifyAvailableGenres', JSON.stringify(genres));
+          // Fallback to localStorage or static list
+          const cachedGenres = localStorage.getItem('spotifyAvailableGenres');
+          
+          if (cachedGenres) {
+            setAvailableGenres(JSON.parse(cachedGenres));
+          } else {
+            // As a last resort, get the static genres list
+            const genres = await getAvailableGenres();
+            setAvailableGenres(genres);
+            // Cache the genres in localStorage
+            localStorage.setItem('spotifyAvailableGenres', JSON.stringify(genres));
+          }
         }
       } catch (error) {
-        console.error('Error fetching available genres:', error);
+        console.error('Error loading genres:', error);
         // Fallback to some common genres
         setAvailableGenres([
           'rock', 'pop', 'electronic', 'classical', 'jazz', 'hip-hop', 
@@ -78,73 +76,36 @@ const GenreSelector: React.FC<GenreSelectorProps> = ({
       }
     };
 
-    fetchGenres();
-  }, []);
+    loadGenres();
+  }, [retrievedGenres]);
 
-  // Filter genres based on input
-  useEffect(() => {
-    if (inputValue.trim() === '') {
-      setFilteredGenres([]);
-      return;
-    }
-
-    const filtered = availableGenres
-      .filter(genre => 
-        genre.toLowerCase().includes(inputValue.toLowerCase()) && 
-        !selectedGenres.includes(genre)
-      )
-      .slice(0, 10); // Limit to 10 suggestions
+  // Function to handle genre selection
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const genre = e.target.value;
+    if (!genre) return;
     
-    setFilteredGenres(filtered);
-  }, [inputValue, availableGenres, selectedGenres]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
-    setShowSuggestions(true);
-  };
-
-  const handleAddGenre = (genre: string) => {
+    setSelectedGenre(''); // Reset select after selection
+    
     if (selectedGenres.length >= maxGenres) {
-      return; // Don't add more than maxGenres
+      toast({
+        title: "Maximum genres reached",
+        description: `You can only select up to ${maxGenres} genres.`,
+        status: "info",
+        duration: 2000,
+        isClosable: true,
+      });
+      return;
     }
     
     if (!selectedGenres.includes(genre)) {
       const newGenres = [...selectedGenres, genre];
       onChange(newGenres);
     }
-    
-    setInputValue('');
-    setShowSuggestions(false);
-    inputRef.current?.focus();
   };
 
   const handleRemoveGenre = (genreToRemove: string) => {
     const newGenres = selectedGenres.filter(genre => genre !== genreToRemove);
     onChange(newGenres);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && inputValue.trim() !== '') {
-      e.preventDefault();
-      
-      // Check if the input matches any available genre
-      const matchedGenre = availableGenres.find(
-        genre => genre.toLowerCase() === inputValue.toLowerCase()
-      );
-      
-      if (matchedGenre) {
-        handleAddGenre(matchedGenre);
-      } else if (filteredGenres.length > 0) {
-        // Add the first suggestion if no exact match
-        handleAddGenre(filteredGenres[0]);
-      } else if (inputValue.trim().length > 2) {
-        // Allow custom genre if at least 3 characters
-        handleAddGenre(inputValue.trim().toLowerCase());
-      }
-    } else if (e.key === 'Backspace' && inputValue === '' && selectedGenres.length > 0) {
-      // Remove the last genre when backspace is pressed on empty input
-      handleRemoveGenre(selectedGenres[selectedGenres.length - 1]);
-    }
   };
 
   // Check if a genre was AI suggested
@@ -176,60 +137,31 @@ const GenreSelector: React.FC<GenreSelectorProps> = ({
         ))}
       </Flex>
       
-      {/* Genre Input */}
+      {/* Genre Dropdown */}
       {selectedGenres.length < maxGenres && (
-        <Box position="relative">
-          <InputGroup>
-            <Input
-              ref={inputRef}
-              placeholder={`Add a genre (${selectedGenres.length}/${maxGenres})...`}
-              value={inputValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              borderRadius="md"
-              bg={bgColor}
-              borderColor={borderColor}
-            />
-            <InputRightElement>
-              {isLoading ? (
-                <Spinner size="sm" color="blue.500" />
-              ) : (
-                <AddIcon color="gray.500" />
-              )}
-            </InputRightElement>
-          </InputGroup>
-          
-          {/* Genre Suggestions */}
-          {showSuggestions && filteredGenres.length > 0 && (
-            <List
-              position="absolute"
-              top="100%"
-              left={0}
-              right={0}
-              mt={2}
-              maxH="200px"
-              overflowY="auto"
-              bg={bgColor}
-              borderRadius="md"
-              boxShadow="lg"
-              zIndex={10}
-              border="1px solid"
-              borderColor={borderColor}
+        <Box>
+          {isLoading ? (
+            <Flex align="center">
+              <Spinner size="sm" mr={2} />
+              <Text>Loading genres...</Text>
+            </Flex>
+          ) : (
+            <Select 
+              placeholder="Pick another suggestion from Mr Beats"
+              value={selectedGenre}
+              onChange={handleSelectChange}
+              isDisabled={availableGenres.length === 0}
             >
-              {filteredGenres.map(genre => (
-                <ListItem
-                  key={genre}
-                  p={2}
-                  cursor="pointer"
-                  _hover={{ bg: hoverBgColor }}
-                  onClick={() => handleAddGenre(genre)}
-                >
-                  <Text>{genre}</Text>
-                </ListItem>
-              ))}
-            </List>
+              {availableGenres
+                .filter(genre => !selectedGenres.includes(genre))
+                .sort((a, b) => a.localeCompare(b))
+                .map(genre => (
+                  <option key={genre} value={genre}>
+                    {genre}
+                  </option>
+                ))
+              }
+            </Select>
           )}
         </Box>
       )}
@@ -237,7 +169,7 @@ const GenreSelector: React.FC<GenreSelectorProps> = ({
       {/* Helper Text */}
       <Text fontSize="sm" color="gray.500" mt={2}>
         {selectedGenres.length === 0 
-          ? 'Add up to 5 genres to customize your playlist' 
+          ? 'Select up to 5 genres from the dropdown to customize your playlist' 
           : selectedGenres.length >= maxGenres 
             ? 'Maximum number of genres reached' 
             : `${maxGenres - selectedGenres.length} more genres can be added`}

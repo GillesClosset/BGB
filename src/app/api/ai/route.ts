@@ -44,8 +44,12 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create the prompt
-    const prompt = createAIPrompt(boardGame);
+    // Get relevant music genres using vector search
+    const relevantGenres = await getRelevantGenres(boardGame);
+    console.log('Retrieved relevant genres:', relevantGenres);
+    
+    // Create the prompt including the retrieved genres
+    const prompt = createAIPrompt(boardGame, relevantGenres);
     
     // Construct the full URL for the API call
     const fullUrl = `${AI_ENDPOINT_BASE}${AI_ENDPOINT_PATH}`;
@@ -97,6 +101,9 @@ export async function POST(request: NextRequest) {
     // Parse the AI response - chat completions endpoint returns text in choices[0].message.content
     const aiResponse = parseAIResponse(response.data.choices[0].message.content, boardGame);
     
+    // Add the retrieved genres to the response
+    aiResponse.retrievedGenres = relevantGenres;
+    
     return NextResponse.json(aiResponse);
   } catch (error: any) {
     console.error('Error in AI API route:', error);
@@ -129,9 +136,78 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Create a prompt for the AI based on board game information
+ * Retrieve relevant music genres from the vector database based on board game description
  */
-function createAIPrompt(boardGame: BoardGame): string {
+async function getRelevantGenres(boardGame: BoardGame): Promise<string[]> {
+  try {
+    // Create a query string from the board game
+    const queryText = `
+    Board Game: ${boardGame.name}
+    Description: ${boardGame.description.substring(0, 500)}
+    Categories: ${boardGame.categories.join(', ')}
+    Mechanics: ${boardGame.mechanics.join(', ')}
+    `;
+    
+    // Use request to our own API on the same server
+    // Note: Using absolute URL with request origin
+    const requestUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}/api/vector-search` 
+      : 'http://localhost:3000/api/vector-search';
+    
+    console.log(`Calling vector search API at: ${requestUrl}`);
+    
+    // Call the vector search API with timeout
+    const response = await axios.post(requestUrl, {
+      text: queryText,
+      limit: 50,
+      threshold: 0.5  // Lower threshold to get more diverse suggestions
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      timeout: 5000 // 5 second timeout to prevent hanging
+    });
+    
+    // Extract genre names and return them
+    if (response.data && response.data.matches) {
+      console.log(`Vector search found ${response.data.matches.length} matching genres`);
+      return response.data.matches.map((match: any) => match.genre);
+    }
+    
+    console.log('Vector search returned no matches');
+    return [];
+  } catch (error: any) {
+    // Log detailed error information
+    console.error('Error retrieving relevant genres:', error.message);
+    
+    if (error.response) {
+      console.error('Vector search API response error:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data
+      });
+    } else if (error.request) {
+      console.error('Vector search API request error - no response received');
+    }
+    
+    // Continue without vector search results
+    console.log('Continuing without vector search results');
+    return []; 
+  }
+}
+
+/**
+ * Create a prompt for the AI based on board game information and relevant genres
+ */
+function createAIPrompt(boardGame: BoardGame, relevantGenres: string[] = []): string {
+  // Format the relevant genres list
+  const genresContext = relevantGenres.length > 0
+    ? `
+RELEVANT SPOTIFY MUSIC GENRES:
+The following music genres from Spotify's catalog are relevant to the theme of this board game:
+${relevantGenres.slice(0, 50).join(', ')}`
+    : '';
+
   return `
 Generate music recommendations for a board game playlist with the following details:
 
@@ -140,6 +216,7 @@ BOARD GAME:
 - Description: ${boardGame.description.substring(0, 900)}...
 - Categories: ${boardGame.categories.join(', ')}
 - Mechanics: ${boardGame.mechanics.join(', ')}
+${genresContext}
 
 Please provide:
 1. The best 5 Spotify music genres that would match this board game's theme and gameplay
@@ -151,6 +228,7 @@ CRITICAL INSTRUCTIONS - FOLLOW EXACTLY:
 3. DO NOT include any text, examples, or self-dialogue before the JSON
 4. DO NOT include multiple JSON objects or code blocks
 5. DO NOT ask questions or seek confirmation
+6. IMPORTANT: For your genre suggestions, prioritize selecting from the RELEVANT SPOTIFY MUSIC GENRES list if appropriate for the board game, but you can also suggest other genres if you believe they would be more suitable.
 
 JSON FORMAT:
 {
@@ -250,50 +328,49 @@ function extractGenres(text: string): string[] {
  * Extract explanation from text
  */
 function extractExplanation(text: string, jsonString: string): string {
-  // If we have a JSON string, look for text after it
-  if (jsonString) {
-    const jsonEndIndex = text.indexOf(jsonString) + jsonString.length;
-    if (jsonEndIndex < text.length) {
-      let explanationText = text.substring(jsonEndIndex).trim();
-      
-      // Clean up the explanation - remove code blocks, quotes, etc.
-      explanationText = explanationText
-        .replace(/```(?:json)?[\s\S]*?```/g, '') // Remove code blocks
-        .replace(/^["\s,.]+|["\s,.]+$/g, '')     // Trim quotes, spaces, commas, periods
-        .replace(/However[\s\S]*?valid response[\s\S]*?requirements:/i, '') // Remove self-dialogue
-        .replace(/Here is the valid response[\s\S]*?requirements:/i, '')
-        .replace(/I need a confirmation[\s\S]*?not\./i, '')
-        .replace(/Please confirm[\s\S]*?gameplay\./i, '')
-        .trim();
-      
-      // If the explanation is too long, truncate it
-      if (explanationText.length > 1000) {
-        explanationText = explanationText.substring(0, 997) + '...';
+  if (!text) return "";
+  
+  let explanation = "";
+  
+  // Remove the JSON part from the text
+  if (jsonString && text.includes(jsonString)) {
+    explanation = text.substring(text.indexOf(jsonString) + jsonString.length);
+  } else {
+    // Try to find explanation after common markers
+    const markers = [
+      "explanation:",
+      "reasoning:",
+      "these genres",
+      "these recommendations",
+      "these suggestions",
+      "i've selected",
+      "i have selected"
+    ];
+    
+    for (const marker of markers) {
+      const markerIndex = text.toLowerCase().indexOf(marker);
+      if (markerIndex !== -1) {
+        explanation = text.substring(markerIndex);
+        break;
       }
-      
-      return explanationText;
+    }
+    
+    // If no marker found, just use the whole text after removing potential JSON
+    if (!explanation) {
+      const jsonEnd = text.indexOf("}");
+      if (jsonEnd !== -1 && jsonEnd < text.length - 1) {
+        explanation = text.substring(jsonEnd + 1);
+      } else {
+        explanation = text;
+      }
     }
   }
   
-  // If no JSON string or no text after JSON, try to find explanation-like text
-  const explanationPatterns = [
-    /(?:These genres|The music genres|These recommendations|The chosen genres)([\s\S]*?)(?:$|```)/i,
-    /(?:explanation|reasoning|rationale):([\s\S]*?)(?:$|```)/i
-  ];
+  // Clean up the explanation
+  explanation = explanation
+    .replace(/^\s*[\r\n]+/, '') // Remove initial newlines
+    .replace(/^[.,;:]\s*/, '')  // Remove leading punctuation
+    .trim();
   
-  for (const pattern of explanationPatterns) {
-    const explanationMatch = text.match(pattern);
-    if (explanationMatch && explanationMatch[1]) {
-      let explanation = explanationMatch[1].trim();
-      
-      // If the explanation is too long, truncate it
-      if (explanation.length > 1000) {
-        explanation = explanation.substring(0, 997) + '...';
-      }
-      
-      return explanation;
-    }
-  }
-  
-  return '';
+  return explanation;
 } 

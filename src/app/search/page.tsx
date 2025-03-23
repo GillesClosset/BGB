@@ -42,7 +42,8 @@ export default function SearchPage() {
     setAiSuggestions, 
     updateSpotifyTracks,
     trackCount,
-    updateTrackCount
+    updateTrackCount,
+    setRetrievedGenres
   } = useAtmosphere();
   const router = useRouter();
   const toast = useToast();
@@ -135,6 +136,13 @@ export default function SearchPage() {
       console.log('AI suggested genres:', aiResponse.genres || []);
       console.log('AI suggested keywords:', aiResponse.keywords || []);
       
+      // Store retrieved genres from vector search if available
+      if (aiResponse.retrievedGenres && aiResponse.retrievedGenres.length > 0) {
+        // Update the atmosphere context with the retrieved genres
+        setRetrievedGenres(aiResponse.retrievedGenres);
+        console.log('Stored retrieved genres:', aiResponse.retrievedGenres.length);
+      }
+      
       // Pass the suggestions to the context
       setAiSuggestions(
         aiResponse.genres || [],
@@ -156,7 +164,7 @@ export default function SearchPage() {
     } finally {
       setIsGeneratingAI(false);
     }
-  }, [setAiSuggestions, toast, session?.user?.accessToken, status]);
+  }, [setAiSuggestions, toast, session?.user?.accessToken, status, setRetrievedGenres]);
 
   const handleContinue = useCallback(async () => {
     if (!selectedGameId) return;
