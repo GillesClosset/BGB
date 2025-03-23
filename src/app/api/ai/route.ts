@@ -172,7 +172,9 @@ async function getRelevantGenres(boardGame: BoardGame): Promise<string[]> {
     // Extract genre names and return them
     if (response.data && response.data.matches) {
       console.log(`Vector search found ${response.data.matches.length} matching genres`);
-      return response.data.matches.map((match: any) => match.name);
+      const extractedGenres = response.data.matches.map((match: any) => match.name).filter(Boolean);
+      console.log('Extracted genre names:', extractedGenres.slice(0, 5));
+      return extractedGenres;
     }
     
     console.log('Vector search returned no matches');

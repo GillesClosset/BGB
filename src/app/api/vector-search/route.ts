@@ -143,11 +143,21 @@ export async function POST(request: NextRequest) {
       console.log(`[Vector Search] Successfully found ${genreCount} matching genres`);
       
       if (genres && genres.length > 0) {
-        const sampleGenres = genres.slice(0, 5).map((g: Genre) => g.name).join(', ');
+        // Log the first genre object to see its structure
+        console.log('[Vector Search] First genre object structure:', JSON.stringify(genres[0]));
+        
+        // Map the genres to include both id and name fields for compatibility
+        const mappedGenres = genres.map((g: any) => ({
+          id: g.id,
+          name: g.genre || g.name || 'Unknown genre' // Try both genre and name fields
+        }));
+        
+        const sampleGenres = mappedGenres.slice(0, 5).map((g: {name: string}) => g.name).join(', ');
         console.log(`[Vector Search] Sample genres: ${sampleGenres}`);
+        
         return NextResponse.json({ 
-          matches: genres,
-          count: genres.length
+          matches: mappedGenres,
+          count: mappedGenres.length
         });
       } else {
         console.warn('[Vector Search] No genres found matching the query');
