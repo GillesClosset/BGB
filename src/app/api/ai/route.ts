@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     const aiResponse = parseAIResponse(response.data.choices[0].message.content, boardGame);
     
     // Add the retrieved genres to the response
-    aiResponse.retrievedGenres = relevantGenres;
+    aiResponse.retrievedGenres = relevantGenres || [];
     
     return NextResponse.json(aiResponse);
   } catch (error: any) {
@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
     // Return fallback response with default genres and audio features
     return NextResponse.json({
       genres: ['instrumental', 'soundtrack', 'ambient', 'electronic', 'classical'],
+      retrievedGenres: [],
       explanation: "Fallback response due to API error. These genres provide a balanced soundtrack suitable for most board games."
     });
   }
@@ -171,7 +172,7 @@ async function getRelevantGenres(boardGame: BoardGame): Promise<string[]> {
     // Extract genre names and return them
     if (response.data && response.data.matches) {
       console.log(`Vector search found ${response.data.matches.length} matching genres`);
-      return response.data.matches.map((match: any) => match.genre);
+      return response.data.matches.map((match: any) => match.name);
     }
     
     console.log('Vector search returned no matches');

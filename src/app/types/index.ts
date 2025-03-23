@@ -110,7 +110,7 @@ export interface AIPrompt {
 export interface AIResponse {
   genres: string[];
   keywords?: string[];
-  retrievedGenres?: string[];
+  retrievedGenres: string[];
   explanation?: string;
   audioFeatures?: {
     acousticness: number;

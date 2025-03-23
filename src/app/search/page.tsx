@@ -137,11 +137,9 @@ export default function SearchPage() {
       console.log('AI suggested keywords:', aiResponse.keywords || []);
       
       // Store retrieved genres from vector search if available
-      if (aiResponse.retrievedGenres && aiResponse.retrievedGenres.length > 0) {
-        // Update the atmosphere context with the retrieved genres
-        setRetrievedGenres(aiResponse.retrievedGenres);
-        console.log('Stored retrieved genres:', aiResponse.retrievedGenres.length);
-      }
+      const retrievedGenres = aiResponse.retrievedGenres || [];
+      setRetrievedGenres(retrievedGenres);
+      console.log('Stored retrieved genres:', retrievedGenres.length);
       
       // Pass the suggestions to the context
       setAiSuggestions(
