@@ -1,6 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// Define interfaces for the results object
+interface TableInfo {
+  exists: boolean;
+  error: string | null;
+  sample: any;
+}
+
+interface TablesResult {
+  spotify_genres?: TableInfo;
+  genres?: TableInfo;
+  error?: string;
+}
+
+interface FunctionInfo {
+  exists: boolean;
+  error: string | null;
+  sample: any;
+}
+
+interface FunctionListInfo {
+  success: boolean;
+  error: string | null;
+  list?: any;
+}
+
+interface FunctionsResult {
+  match_genres?: FunctionInfo;
+  error?: string;
+  available?: FunctionListInfo;
+}
+
+interface DatabaseCheckResult {
+  environment: {
+    supabaseUrl: string;
+    supabaseServiceKey: string;
+  };
+  tables: TablesResult;
+  functions: FunctionsResult;
+  test: Record<string, any>;
+}
+
 export async function GET(request: NextRequest) {
   try {
     // Get Supabase credentials
@@ -19,7 +60,7 @@ export async function GET(request: NextRequest) {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Collect information about the database
-    const results = {
+    const results: DatabaseCheckResult = {
       environment: {
         supabaseUrl: supabaseUrl ? '✓ Available' : '❌ Missing',
         supabaseServiceKey: supabaseServiceKey ? '✓ Available (hidden)' : '❌ Missing',
@@ -96,7 +137,8 @@ export async function GET(request: NextRequest) {
     } catch (error: any) {
       results.functions.available = {
         success: false,
-        error: error.message
+        error: error.message,
+        list: null
       };
     }
     

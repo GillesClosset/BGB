@@ -3,8 +3,22 @@
 import { useState, useEffect } from 'react';
 import { Box, Heading, Container, VStack, Code, Button, Spinner, Text } from '@chakra-ui/react';
 
+// Define interface for the API response data
+interface DatabaseCheckData {
+  environment: {
+    supabaseUrl: string;
+    supabaseServiceKey: string;
+  };
+  tables: Record<string, any>;
+  functions: Record<string, any>;
+  test: Record<string, any>;
+  error?: string;
+  status?: string;
+}
+
 export default function DatabaseCheckPage() {
-  const [data, setData] = useState(null);
+  // Use explicit typing to avoid 'never' type issues
+  const [data, setData] = useState<DatabaseCheckData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,7 +33,7 @@ export default function DatabaseCheckPage() {
         throw new Error(`API responded with status: ${response.status}`);
       }
       
-      const result = await response.json();
+      const result: DatabaseCheckData = await response.json();
       setData(result);
     } catch (err: any) {
       console.error('Error fetching database info:', err);
@@ -67,14 +81,14 @@ export default function DatabaseCheckPage() {
             <Box>
               <Heading as="h2" size="md" mb={2}>Tables</Heading>
               <Code p={4} borderRadius="md" display="block" whiteSpace="pre" overflowX="auto">
-                {JSON.stringify(data.tables, null, 2)}
+                {data.tables && JSON.stringify(data.tables, null, 2)}
               </Code>
             </Box>
             
             <Box>
               <Heading as="h2" size="md" mb={2}>Functions</Heading>
               <Code p={4} borderRadius="md" display="block" whiteSpace="pre" overflowX="auto">
-                {JSON.stringify(data.functions, null, 2)}
+                {data.functions && JSON.stringify(data.functions, null, 2)}
               </Code>
             </Box>
           </VStack>
