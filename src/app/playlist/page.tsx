@@ -20,6 +20,7 @@ import {
   Badge,
   Divider,
   useToast,
+  Link,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { useAtmosphere } from '@/app/context/atmosphere-context';
@@ -90,7 +91,11 @@ export default function PlaylistPage() {
       const formattedTracks: SpotifyTrack[] = recommendations.map(track => ({
         id: track.id,
         name: track.name,
-        artists: track.artists.map(artist => ({ id: artist.id, name: artist.name })),
+        artists: track.artists.map(artist => ({ 
+          id: artist.id, 
+          name: artist.name,
+          external_urls: artist.external_urls
+        })),
         album: {
           id: track.album.id,
           name: track.album.name,
@@ -101,7 +106,10 @@ export default function PlaylistPage() {
           }))
         },
         duration_ms: track.duration_ms,
-        uri: track.uri
+        uri: track.uri,
+        external_urls: track.external_urls,
+        preview_url: track.preview_url,
+        popularity: track.popularity
       }));
 
       setTracks(formattedTracks);
@@ -222,19 +230,47 @@ export default function PlaylistPage() {
                     display="flex"
                     flexDirection="column"
                   >
-                    <Image
-                      src={track.album.images[0]?.url || 'https://via.placeholder.com/300'}
-                      alt={track.name}
-                      height="200px"
-                      width="100%"
-                      objectFit="cover"
-                    />
+                    <Link 
+                      href={track.external_urls.spotify} 
+                      isExternal 
+                      _hover={{ opacity: 0.8 }}
+                      display="block"
+                    >
+                      <Image
+                        src={track.album.images[0]?.url || 'https://via.placeholder.com/300'}
+                        alt={track.name}
+                        height="200px"
+                        width="100%"
+                        objectFit="cover"
+                        cursor="pointer"
+                        title="Open in Spotify"
+                      />
+                    </Link>
                     <Box p={4} flex="1" display="flex" flexDirection="column">
                       <Heading size="sm" mb={2} noOfLines={1} color={textColor}>
-                        {track.name}
+                        <Link 
+                          href={track.external_urls.spotify} 
+                          isExternal 
+                          _hover={{ textDecoration: 'underline', color: '#1DB954' }}
+                          color="inherit"
+                        >
+                          {track.name}
+                        </Link>
                       </Heading>
                       <Text fontSize="sm" color="gray.500" mb={2} noOfLines={1}>
-                        {track.artists.map(artist => artist.name).join(', ')}
+                        {track.artists.map((artist, index) => (
+                          <React.Fragment key={artist.id}>
+                            {index > 0 && ', '}
+                            <Link 
+                              href={artist.external_urls.spotify} 
+                              isExternal 
+                              _hover={{ textDecoration: 'underline', color: '#1DB954' }}
+                              color="inherit"
+                            >
+                              {artist.name}
+                            </Link>
+                          </React.Fragment>
+                        ))}
                       </Text>
                       <Text fontSize="xs" color="gray.500" mb={2} noOfLines={1}>
                         {track.album.name}

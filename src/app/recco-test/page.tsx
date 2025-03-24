@@ -82,7 +82,13 @@ interface TrackWithFeatures extends SpotifyTrack {
 interface ReccoTrack {
   id: string;
   name: string;
-  artists: Array<{ id: string; name: string }>;
+  artists: Array<{ 
+    id: string; 
+    name: string;
+    external_urls: { 
+      spotify: string 
+    };
+  }>;
   album: {
     id: string;
     name: string;
@@ -308,7 +314,15 @@ export default function ReccoTestPage() {
           id: spotifyId,
           name: track.name || track.trackTitle || 'Unknown Track',
           artists: track.artists || 
-                  (track.artist ? [{ id: '0', name: track.artist }] : [{ id: '0', name: 'Unknown Artist' }]),
+                  (track.artist ? [{ 
+                    id: '0', 
+                    name: track.artist,
+                    external_urls: { spotify: '' }
+                  }] : [{ 
+                    id: '0', 
+                    name: 'Unknown Artist',
+                    external_urls: { spotify: '' }
+                  }]),
           album: track.album || { 
             id: '0', 
             name: track.albumName || 'Unknown Album', 

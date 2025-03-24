@@ -28,6 +28,7 @@ import {
   Badge,
   Center,
   keyframes,
+  Link,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn } from 'next-auth/react';
@@ -1358,17 +1359,33 @@ export default function AtmospherePage() {
                   {spotifyTracks.slice(0, 25).map((track: SpotifyTrack) => (
                   <Card key={track.id} overflow="hidden" variant="outline">
                     <CardBody p={3}>
-                      <Image
-                        src={track.album.images[0]?.url || '/images/music-placeholder.png'}
-                        alt={track.name}
-                        borderRadius="md"
-                        objectFit="cover"
-                        width="100%"
-                        height="160px"
-                      />
+                      <Link 
+                        href={track.external_urls.spotify} 
+                        isExternal 
+                        _hover={{ opacity: 0.8 }}
+                        display="block"
+                      >
+                        <Image
+                          src={track.album.images[0]?.url || '/images/music-placeholder.png'}
+                          alt={track.name}
+                          borderRadius="md"
+                          objectFit="cover"
+                          width="100%"
+                          height="160px"
+                          cursor="pointer"
+                          title="Open in Spotify"
+                        />
+                      </Link>
                       <Stack mt={2} spacing={1}>
                         <Heading size="sm" noOfLines={1} title={track.name}>
-                          {track.name}
+                          <Link 
+                            href={track.external_urls.spotify} 
+                            isExternal 
+                            _hover={{ textDecoration: 'underline', color: '#1DB954' }}
+                            color="inherit"
+                          >
+                            {track.name}
+                          </Link>
                         </Heading>
                         <Text fontSize="sm" color="gray.500" noOfLines={1}>
                           {track.artists.map(artist => artist.name).join(', ')}

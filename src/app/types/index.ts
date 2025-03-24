@@ -10,7 +10,10 @@ export interface SpotifyUser {
 export interface SpotifyTrack {
   id: string;
   name: string;
-  artists: string;
+  artists: Array<{
+    id: string;
+    name: string;
+  }>;
   album: {
     id: string;
     name: string;
