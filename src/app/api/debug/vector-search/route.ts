@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         // Create client with service key
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         // Try simple query to check connection
-        const { data, error } = await supabase.from('genres').select('id, name').limit(1);
+        const { data, error } = await supabase.from('spotify_genres').select('id, genre').limit(1);
         
         results.supabase = {
           connection: error ? '❌ Failed' : '✓ Success',

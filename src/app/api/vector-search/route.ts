@@ -133,11 +133,38 @@ export async function POST(request: NextRequest) {
 
       // Query Supabase for similar genres
       console.log(`[Vector Search] Querying Supabase for similar genres (limit=${limit}, threshold=${threshold})`);
-      const { data: genres, error } = await supabase.rpc('match_genres', {
-        query_embedding: embedding,
-        match_threshold: threshold,
-        match_count: limit
-      });
+      
+      // Try first with match_spotify_genres (the likely correct name)
+      let genresData;
+      let error;
+      
+      try {
+        const result = await supabase.rpc('match_spotify_genres', {
+          query_embedding: embedding,
+          match_threshold: threshold,
+          match_count: limit
+        });
+        
+        genresData = result.data;
+        error = result.error;
+        
+        if (error) {
+          console.log(`[Vector Search] First RPC attempt failed, trying fallback: ${error.message}`);
+          
+          // Fallback to match_genres if the first attempt failed
+          const fallbackResult = await supabase.rpc('match_genres', {
+            query_embedding: embedding,
+            match_threshold: threshold,
+            match_count: limit
+          });
+          
+          genresData = fallbackResult.data;
+          error = fallbackResult.error;
+        }
+      } catch (rpcError) {
+        console.error(`[Vector Search] RPC execution error: ${rpcError}`);
+        error = { message: rpcError instanceof Error ? rpcError.message : 'Unknown RPC error' };
+      }
 
       if (error) {
         console.error(`[Vector Search] Supabase query error: ${error.message}`);
@@ -148,15 +175,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Log success and result summary
-      const genreCount = genres?.length || 0;
+      const genreCount = genresData?.length || 0;
       console.log(`[Vector Search] Successfully found ${genreCount} matching genres`);
       
-      if (genres && genres.length > 0) {
+      if (genresData && genresData.length > 0) {
         // Log the first genre object to see its structure
-        console.log('[Vector Search] First genre object structure:', JSON.stringify(genres[0]));
+        console.log('[Vector Search] First genre object structure:', JSON.stringify(genresData[0]));
         
         // Map the genres to include both id and name fields for compatibility
-        const mappedGenres = genres.map((g: any) => ({
+        const mappedGenres = genresData.map((g: any) => ({
           id: g.id,
           name: g.genre || g.name || 'Unknown genre' // Try both genre and name fields
         }));
