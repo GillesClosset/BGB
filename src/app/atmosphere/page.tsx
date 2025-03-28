@@ -267,7 +267,7 @@ export default function AtmospherePage() {
           console.log(`Fetching ${tracksToFetch} tracks for genre "${genre}" (offset: ${offset}, page ${paginationCount + 1}/${MAX_PAGINATION_DEPTH})`);
           paginationCount++;
           
-          const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(genre)}&limit=${tracksToFetch}&offset=${offset}`);
+          const response = await fetch(`/api/spotify?action=search&query=${encodeURIComponent(genre)}&limit=${tracksToFetch}&offset=${offset}&isGenre=true`);
           const data = await response.json();
           
           if (response.ok && data.tracks && data.tracks.length > 0) {
@@ -1287,7 +1287,7 @@ export default function AtmospherePage() {
                   "Refreshing tracks..." : 
                   "Creating playlist & preparing Spotify..."}
                 isDisabled={spotifyTracks.length === 0}
-                leftIcon={<Icon as={FaSpotify} boxSize={5} />}
+                leftIcon={spotifyTracks.length > 0 ? <Icon as={FaSpotify} boxSize={5} /> : undefined}
                 borderRadius="full"
                 bgColor="#1DB954"
                 _hover={{ bgColor: "#1ED760" }}
@@ -1296,9 +1296,10 @@ export default function AtmospherePage() {
                 fontSize="md"
                 boxShadow="md"
               >
-                {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
+                {spotifyTracks.length === 0 ? 'Select tracks type first (above)' : 
+                  playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
               </Button>
-              
+
               {/* Restore Suggestions Button */}
               <Button
                 size="lg"
@@ -1439,7 +1440,7 @@ export default function AtmospherePage() {
                   "Refreshing tracks..." : 
                   "Creating playlist & preparing Spotify..."}
                   isDisabled={spotifyTracks.length === 0}
-                leftIcon={<Icon as={FaSpotify} boxSize={5} />}
+                leftIcon={spotifyTracks.length > 0 ? <Icon as={FaSpotify} boxSize={5} /> : undefined}
                 borderRadius="full"
                 bgColor="#1DB954"
                 _hover={{ bgColor: "#1ED760" }}
@@ -1448,37 +1449,8 @@ export default function AtmospherePage() {
                 fontSize="md"
                 boxShadow="md"
               >
-                {playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
-                </Button>
-                
-                {/* Restore Suggestions Button */}
-                <Button
-                  size="lg"
-                  onClick={() => {
-                    if (aiSuggestedGenres.length > 0) {
-                      updateSelectedGenres(aiSuggestedGenres);
-                    }
-                    if (aiKeywords.length > 0) {
-                      updateSelectedKeywords(aiKeywords);
-                    }
-                    toast({
-                      title: 'Suggestions Restored',
-                      description: 'AI-suggested genres and keywords have been restored',
-                      status: 'info',
-                      duration: 3000,
-                      isClosable: true,
-                    });
-                  }}
-                  px={10}
-                  py={6}
-                  isDisabled={aiSuggestedGenres.length === 0 && aiKeywords.length === 0}
-                  borderRadius="full"
-                  colorScheme="purple"
-                  fontWeight="bold"
-                  fontSize="md"
-                  boxShadow="md"
-                >
-                  Restore Suggestions
+                {spotifyTracks.length === 0 ? 'Select tracks type first (above)' : 
+                  playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
                 </Button>
               </Flex>
             ) : (

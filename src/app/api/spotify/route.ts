@@ -108,6 +108,7 @@ export async function GET(req: NextRequest) {
         const query = url.searchParams.get('query');
         const limit = url.searchParams.get('limit') || '20';
         const offset = url.searchParams.get('offset') || '0';
+        const isGenreSearch = url.searchParams.get('isGenre') === 'true';
         
         if (!query) {
           return NextResponse.json(
@@ -121,9 +122,12 @@ export async function GET(req: NextRequest) {
           const parsedLimit = Math.min(Math.max(parseInt(limit), 1), 50);
           const parsedOffset = Math.max(parseInt(offset), 0);
           
-          console.log(`[Spotify API] Searching tracks with query: "${query}", limit: ${parsedLimit}, offset: ${parsedOffset}`);
+          // Format query differently for genre vs keyword search
+          const formattedQuery = isGenreSearch ? `genre:${query}` : query;
           
-          const data = await spotifyClient.searchTracks(query, { 
+          console.log(`[Spotify API] Searching tracks with ${isGenreSearch ? 'genre' : 'keyword'} query: "${formattedQuery}", limit: ${parsedLimit}, offset: ${parsedOffset}`);
+          
+          const data = await spotifyClient.searchTracks(formattedQuery, { 
             limit: parsedLimit,
             offset: parsedOffset
           });
