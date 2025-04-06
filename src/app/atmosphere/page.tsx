@@ -1259,33 +1259,29 @@ export default function AtmospherePage() {
 
           {/* Spotify Button above Search Results */}
           {status === 'authenticated' && (
-            <Flex justify="center" my={4} gap={4}>
+            <Flex justify="center" mt={4} direction={{ base: "column", md: "row" }} gap={4} width="100%">
               <Button 
                 colorScheme="green" 
                 size="lg" 
                 onClick={async () => {
                   if (playlistUrl) {
-                    // If playlist already exists, just open it
                     window.open(playlistUrl, '_blank');
                   } else {
-                    // Check if we need to refresh tracks first
                     if (spotifyTracks.length < trackCount && !isSearching) {
-                      setIsCreatingPlaylist(true); // Show loading state during refresh
+                      setIsCreatingPlaylist(true);
                     }
-                    
-                    // Create the playlist and open it
                     const newPlaylistUrl = await handleContinue();
                     if (newPlaylistUrl) {
                       window.open(newPlaylistUrl, '_blank');
                     }
                   }
                 }}
-                px={10}
-                py={6}
+                px={{ base: 4, md: 10 }}
+                py={{ base: 4, md: 6 }}
                 isLoading={isCreatingPlaylist}
                 loadingText={spotifyTracks.length < trackCount && !isSearching ? 
                   "Refreshing tracks..." : 
-                  "Creating playlist & preparing Spotify..."}
+                  "Creating playlist..."}
                 isDisabled={spotifyTracks.length === 0}
                 leftIcon={spotifyTracks.length > 0 ? <Icon as={FaSpotify} boxSize={5} /> : undefined}
                 borderRadius="full"
@@ -1293,10 +1289,14 @@ export default function AtmospherePage() {
                 _hover={{ bgColor: "#1ED760" }}
                 _active={{ bgColor: "#1AA64B" }}
                 fontWeight="bold"
-                fontSize="md"
+                fontSize={{ base: "sm", md: "md" }}
                 boxShadow="md"
+                whiteSpace="normal"
+                textAlign="center"
+                width={{ base: "full", md: "auto" }}
+                minW={{ base: "auto", md: "250px" }}
               >
-                {spotifyTracks.length === 0 ? 'Select tracks type first (above)' : 
+                {spotifyTracks.length === 0 ? 'Select tracks type first' : 
                   playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
               </Button>
 
@@ -1318,14 +1318,18 @@ export default function AtmospherePage() {
                     isClosable: true,
                   });
                 }}
-                px={10}
-                py={6}
+                px={{ base: 4, md: 10 }}
+                py={{ base: 4, md: 6 }}
                 isDisabled={aiSuggestedGenres.length === 0 && aiKeywords.length === 0}
                 borderRadius="full"
                 colorScheme="purple"
                 fontWeight="bold"
-                fontSize="md"
+                fontSize={{ base: "sm", md: "md" }}
                 boxShadow="md"
+                whiteSpace="normal"
+                textAlign="center"
+                width={{ base: "full", md: "auto" }}
+                minW={{ base: "auto", md: "200px" }}
               >
                 Restore Suggestions
               </Button>
@@ -1418,27 +1422,23 @@ export default function AtmospherePage() {
                   size="lg" 
                 onClick={async () => {
                   if (playlistUrl) {
-                    // If playlist already exists, just open it
                     window.open(playlistUrl, '_blank');
                   } else {
-                    // Check if we need to refresh tracks first
                     if (spotifyTracks.length < trackCount && !isSearching) {
-                      setIsCreatingPlaylist(true); // Show loading state during refresh
+                      setIsCreatingPlaylist(true);
                     }
-                    
-                    // Create the playlist and open it
                     const newPlaylistUrl = await handleContinue();
                     if (newPlaylistUrl) {
                       window.open(newPlaylistUrl, '_blank');
                     }
                   }
                 }}
-                px={10}
-                py={6}
+                px={{ base: 4, md: 10 }}
+                py={{ base: 4, md: 6 }}
                   isLoading={isCreatingPlaylist}
                 loadingText={spotifyTracks.length < trackCount && !isSearching ? 
                   "Refreshing tracks..." : 
-                  "Creating playlist & preparing Spotify..."}
+                  "Creating playlist..."}
                   isDisabled={spotifyTracks.length === 0}
                 leftIcon={spotifyTracks.length > 0 ? <Icon as={FaSpotify} boxSize={5} /> : undefined}
                 borderRadius="full"
@@ -1446,10 +1446,14 @@ export default function AtmospherePage() {
                 _hover={{ bgColor: "#1ED760" }}
                 _active={{ bgColor: "#1AA64B" }}
                 fontWeight="bold"
-                fontSize="md"
+                fontSize={{ base: "sm", md: "md" }}
                 boxShadow="md"
+                whiteSpace="normal"
+                textAlign="center"
+                width={{ base: "full", md: "auto" }}
+                minW={{ base: "auto", md: "250px" }}
               >
-                {spotifyTracks.length === 0 ? 'Select tracks type first (above)' : 
+                {spotifyTracks.length === 0 ? 'Select tracks type first' : 
                   playlistUrl ? 'Open Playlist in Spotify' : 'Create & Play on Spotify'}
                 </Button>
               </Flex>
@@ -1458,16 +1462,20 @@ export default function AtmospherePage() {
                 colorScheme="green" 
                 size="lg" 
                 onClick={handleSignIn}
-                px={10}
-                py={6}
+                px={{ base: 4, md: 10 }}
+                py={{ base: 4, md: 6 }}
                 leftIcon={<Icon as={FaSpotify} boxSize={5} />}
                 borderRadius="full"
                 bgColor="#1DB954"
                 _hover={{ bgColor: "#1ED760" }}
                 _active={{ bgColor: "#1AA64B" }}
                 fontWeight="bold"
-                fontSize="md"
+                fontSize={{ base: "sm", md: "md" }}
                 boxShadow="md"
+                whiteSpace="normal"
+                textAlign="center"
+                width={{ base: "full", md: "auto" }}
+                minW={{ base: "auto", md: "250px" }}
               >
                 Connect with Spotify
               </Button>
